@@ -1,6 +1,7 @@
 package com.github.alexmojaki.birdseye.pycharm;
 
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
+import com.intellij.execution.ExecutionException;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
@@ -14,6 +15,8 @@ import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowAnchor;
@@ -26,12 +29,17 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.content.ContentManagerAdapter;
 import com.intellij.ui.content.ContentManagerEvent;
+import com.jetbrains.python.packaging.PyPackage;
+import com.jetbrains.python.packaging.PyPackageManager;
+import com.jetbrains.python.packaging.PyPackageManagerUI;
+import com.jetbrains.python.packaging.PyPackageUtil;
 import com.jetbrains.python.psi.PyFunction;
 import com.jetbrains.python.psi.impl.PyFunctionImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
 import java.util.*;
 import java.util.Timer;
 import java.util.stream.Collectors;
@@ -269,17 +277,17 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
     }
 
     void notifyError(String title, String message) {
-        notifyError(title, message, null);
+        notify(title, message, null, NotificationType.ERROR);
     }
 
-    void notifyError(String title, String message, NotificationListener listener) {
+    private void notify(String title, String message, NotificationListener listener, NotificationType type) {
         Notifications.Bus.notify(new Notification(
                         "birdseye",
                         MyProjectComponent.BIRDSEYE_ICON,
                         title,
                         null,
                         message,
-                        NotificationType.ERROR,
+                        type,
                         listener),
                 myProject);
     }
@@ -324,4 +332,52 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
                 .get(state.port, state.dbUrl)
                 .processMonitor;
     }
+
+    void offerInstall(String title, String message, String requirement, Runnable onInstalled) {
+        NotificationListener.Adapter listener = new NotificationListener.Adapter() {
+            @Override
+            protected void hyperlinkActivated(@NotNull Notification notification, @NotNull HyperlinkEvent e) {
+                Sdk projectSdk = ProjectRootManager.getInstance(myProject).getProjectSdk();
+                assert projectSdk != null;
+                final PyPackageManager packageManager = PyPackageManager.getInstance(projectSdk);
+                Runnable install = () -> {
+                    PyPackageManagerUI ui = new PyPackageManagerUI(myProject, projectSdk, new PyPackageManagerUI.Listener() {
+                        @Override
+                        public void started() {
+                        }
+
+                        @Override
+                        public void finished(List<ExecutionException> exceptions) {
+                            if (exceptions.isEmpty()) {
+                                onInstalled.run();
+                            }
+                        }
+                    });
+                    ui.install(packageManager.parseRequirements(requirement), Collections.emptyList());
+                };
+                List<PyPackage> packages = packageManager.getPackages();
+                assert packages != null;
+                if (!PyPackageUtil.hasManagement(packages)) {
+                    PyPackageManagerUI ui = new PyPackageManagerUI(myProject, projectSdk, new PyPackageManagerUI.Listener() {
+                        @Override
+                        public void started() {
+                        }
+
+                        @Override
+                        public void finished(List<ExecutionException> exceptions) {
+                            if (exceptions.isEmpty()) {
+                                install.run();
+                            }
+                        }
+                    });
+                    ui.installManagement();
+                } else {
+                    install.run();
+                }
+            }
+        };
+        notify(title, message, listener, NotificationType.WARNING);
+    }
+
+
 }

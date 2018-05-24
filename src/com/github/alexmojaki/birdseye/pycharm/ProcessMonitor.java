@@ -3,17 +3,20 @@ package com.github.alexmojaki.birdseye.pycharm;
 import com.google.common.collect.EvictingQueue;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationListener;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ProjectRootManager;
-import com.jetbrains.python.packaging.*;
+import com.jetbrains.python.packaging.PyPackage;
+import com.jetbrains.python.packaging.PyPackageManager;
+import com.jetbrains.python.packaging.PyRequirement;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.jetbrains.annotations.NotNull;
 
-import javax.swing.event.HyperlinkEvent;
 import java.io.InputStream;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Scanner;
+import java.util.TimerTask;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 class ProcessMonitor {
@@ -27,6 +30,10 @@ class ProcessMonitor {
     private long startTime;
 
     String errorMessage = "";
+
+    private static final Pattern OUTDATED_PATTERN = Pattern.compile(
+            "(birdseye is out of date). (Your version is .+, the latest is ([\\d.]+\\d))",
+            Pattern.CASE_INSENSITIVE);
 
     ProcessMonitor(MyProjectComponent projectComponent) {
         this.projectComponent = projectComponent;
@@ -69,49 +76,11 @@ class ProcessMonitor {
 
         if (pyRequirement.match(packages) == null) {
             errorMessage = "Required version of birdseye not installed";
-            projectComponent.notifyError(
+            projectComponent.offerInstall(
                     errorMessage,
-                    "Click <a href='#'>here</a> to install birdseye.",
-                    new NotificationListener.Adapter() {
-                        @Override
-                        protected void hyperlinkActivated(@NotNull Notification notification, @NotNull HyperlinkEvent e) {
-
-                            Runnable install = () -> {
-                                PyPackageManagerUI ui = new PyPackageManagerUI(projectComponent.getProject(), projectSdk, new PyPackageManagerUI.Listener() {
-                                    @Override
-                                    public void started() {
-                                    }
-
-                                    @Override
-                                    public void finished(List<ExecutionException> exceptions) {
-                                        if (exceptions.isEmpty()) {
-                                            start();
-                                        }
-                                    }
-                                });
-                                ui.install(packageManager.parseRequirements("birdseye"), Collections.emptyList());
-
-                            };
-                            if (!PyPackageUtil.hasManagement(packages)) {
-                                PyPackageManagerUI ui = new PyPackageManagerUI(projectComponent.getProject(), projectSdk, new PyPackageManagerUI.Listener() {
-                                    @Override
-                                    public void started() {
-                                    }
-
-                                    @Override
-                                    public void finished(List<ExecutionException> exceptions) {
-                                        if (exceptions.isEmpty()) {
-                                            install.run();
-                                        }
-                                    }
-                                });
-                                ui.installManagement();
-                            } else {
-                                install.run();
-                            }
-                        }
-                    }
-            );
+                    "Click <a href='#'>here</a> to install/upgrade birdseye.",
+                    "birdseye",
+                    this::start);
             return;
         }
 
@@ -149,6 +118,16 @@ class ProcessMonitor {
                 String line = scanner.nextLine().trim();
                 if (!line.isEmpty()) {
                     lines.add(line);
+                    Matcher matcher = OUTDATED_PATTERN.matcher(line);
+                    if (matcher.find()) {
+                        projectComponent.offerInstall(
+                                matcher.group(1),
+                                matcher.group(2) + ". Click <a href='#'>here</a> to upgrade.",
+                                "birdseye==" + matcher.group(3),
+                                () -> {
+                                }
+                        );
+                    }
                 }
             }
 
