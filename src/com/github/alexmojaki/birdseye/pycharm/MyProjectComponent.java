@@ -51,6 +51,10 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
             "/com/github/alexmojaki/birdseye/pycharm/" +
                     "icons/birdseye-icon.png");
 
+    static final Icon BIRDSEYE_EMPTY_ICON = IconLoader.getIcon(
+            "/com/github/alexmojaki/birdseye/pycharm/" +
+                    "icons/gray-eye-icon.png");
+
     State state = new State();
 
     @Nullable

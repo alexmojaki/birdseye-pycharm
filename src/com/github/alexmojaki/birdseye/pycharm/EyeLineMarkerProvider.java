@@ -65,7 +65,9 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
             result.add(new LineMarkerInfo<>(
                     nameIdentifier,
                     nameIdentifier.getTextRange(),
-                    MyProjectComponent.BIRDSEYE_ICON,
+                    hasCalls ?
+                            MyProjectComponent.BIRDSEYE_ICON :
+                            MyProjectComponent.BIRDSEYE_EMPTY_ICON,
                     Pass.LINE_MARKERS,
                     new ConstantFunction<>(
                             hasCalls ?

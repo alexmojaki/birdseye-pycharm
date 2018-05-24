@@ -1,4 +1,3 @@
-change logo when there are no calls for a function
 refactor
 test
 release python side
