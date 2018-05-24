@@ -16,6 +16,7 @@
 package com.github.alexmojaki.birdseye.pycharm;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.actions.CloseTabToolbarAction;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
@@ -62,6 +63,7 @@ class PanelWithCloseButton extends JPanel implements Disposable {
         }
 
         myToolbarGroup.add(new OpenSettingsAction());
+        myToolbarGroup.add(new OpenHelpAction());
 
         add(component, BorderLayout.CENTER);
         add(toolbar.getComponent(), BorderLayout.WEST);
@@ -96,6 +98,20 @@ class PanelWithCloseButton extends JPanel implements Disposable {
         @Override
         public void actionPerformed(AnActionEvent e) {
             ShowSettingsUtil.getInstance().editConfigurable(project, new MyConfigurable(project));
+        }
+    }
+
+    private class OpenHelpAction extends AnAction {
+
+        OpenHelpAction() {
+            Presentation presentation = getTemplatePresentation();
+            presentation.setIcon(AllIcons.Actions.Help);
+            presentation.setText("View help online");
+        }
+
+        @Override
+        public void actionPerformed(AnActionEvent e) {
+            BrowserUtil.browse("https://github.com/alexmojaki/birdseye-pycharm/blob/master/README.md");
         }
     }
 
