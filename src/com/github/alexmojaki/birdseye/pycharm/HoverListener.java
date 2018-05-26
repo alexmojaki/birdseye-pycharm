@@ -13,7 +13,6 @@ import com.intellij.openapi.project.Project;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.text.SimpleDateFormat;
 
 public class HoverListener extends EditorMouseMotionAdapter implements EditorMouseListener {
     static final HoverListener INSTANCE = new HoverListener();

@@ -1,7 +1,8 @@
 package com.github.alexmojaki.birdseye.pycharm;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.intellij.codeInsight.daemon.impl.EditorTracker;
-import com.intellij.lang.ASTNode;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.ex.DocumentEx;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
@@ -10,20 +11,18 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.tree.TokenSet;
 import com.jetbrains.python.PyTokenTypes;
-import com.jetbrains.python.psi.PyFunction;
-import com.jetbrains.python.psi.impl.PyFunctionImpl;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Utils {
+
+    static final Gson GSON = new GsonBuilder().create();
 
     private Utils() {
     }

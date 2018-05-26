@@ -1,7 +1,5 @@
 package com.github.alexmojaki.birdseye.pycharm;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
@@ -32,7 +30,6 @@ import static com.github.alexmojaki.birdseye.pycharm.Utils.psiDocument;
 public class Call {
 //    private static final Key<Node> NODE_KEY = Key.create(Node.class.getCanonicalName());
 
-    private static final Gson GSON = new GsonBuilder().create();
     private String functionText;
     private CallData callData;
     CallPanel panel;
@@ -209,7 +206,7 @@ public class Call {
         }
 
         Map meta() {
-            return GSON.fromJson(arr.get(2), Map.class);
+            return Utils.GSON.fromJson(arr.get(2), Map.class);
         }
 
         boolean isStatement() {

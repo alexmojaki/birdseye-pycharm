@@ -7,10 +7,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.github.alexmojaki.birdseye.pycharm.Utils.*;
+import static com.github.alexmojaki.birdseye.pycharm.Utils.htmlList;
+import static com.github.alexmojaki.birdseye.pycharm.Utils.tag;
 
 class CallMeta {
 

@@ -1,7 +1,5 @@
 package com.github.alexmojaki.birdseye.pycharm;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.intellij.openapi.project.Project;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.fluent.Request;
@@ -16,7 +14,6 @@ import java.util.List;
 import static com.github.alexmojaki.birdseye.pycharm.Utils.htmlList;
 
 class ApiClient {
-    private static final Gson GSON = new GsonBuilder().create();
     private final Project project;
     private boolean inError = false;
 
@@ -52,7 +49,7 @@ class ApiClient {
                 return null;
             }
             String content = EntityUtils.toString(response.getEntity());
-            T result = GSON.fromJson(content, responseClass);
+            T result = Utils.GSON.fromJson(content, responseClass);
             inError = false;
             return result;
         } catch (IOException e) {
@@ -87,7 +84,7 @@ class ApiClient {
     @SuppressWarnings("SameParameterValue")
     private <T> T post(String path, Object body, Class<T> responseClass) {
         Request request = Request.Post(url(path))
-                .bodyString(GSON.toJson(body), ContentType.APPLICATION_JSON);
+                .bodyString(Utils.GSON.toJson(body), ContentType.APPLICATION_JSON);
         return request(request, responseClass);
     }
 
