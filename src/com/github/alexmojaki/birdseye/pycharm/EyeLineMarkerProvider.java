@@ -4,12 +4,10 @@ import com.intellij.codeHighlighting.Pass;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.editor.RangeMarker;
 import com.intellij.openapi.editor.ex.DocumentEx;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.ui.components.JBLabel;
@@ -33,8 +31,6 @@ import java.util.Collection;
 import java.util.List;
 
 public class EyeLineMarkerProvider implements LineMarkerProvider {
-
-    static final Key<Range> ORIGINAL_RANGE = Key.create("ORIGINAL_RANGE");
 
 
     @Nullable
@@ -106,19 +102,7 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
                             "but never the function itself.</p></html>"
             );
         } else {
-            BirdseyeFunction function = new BirdseyeFunction();
-
-            int startOffset = Utils.getFunctionStart(psiFunction);
-
-            for (Range range : response.ranges) {
-                RangeMarker rangeMarker = document.createRangeMarker(range.start + startOffset, range.end + startOffset, true);
-                rangeMarker.putUserData(ORIGINAL_RANGE, range);
-                function.rangeMarkers.put(range, rangeMarker);
-            }
-
-            function.fullRangeMarker = document.createRangeMarker(
-                    startOffset,
-                    psiFunction.getTextRange().getEndOffset());
+            BirdseyeFunction function = new BirdseyeFunction(psiFunction, response.ranges, document);
 
             final JTable table = new JBTableWithRowHeaders(true);
             centralComponent = table;

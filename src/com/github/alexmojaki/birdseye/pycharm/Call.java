@@ -262,7 +262,7 @@ public class Call {
     private List<Node> nodesOverlappingWith(int offset) {
         List<Node> nodes = new ArrayList<>();
         document.processRangeMarkersOverlappingWith(offset, offset, rangeMarker -> {
-            Range range = rangeMarker.getUserData(EyeLineMarkerProvider.ORIGINAL_RANGE);
+            Range range = rangeMarker.getUserData(BirdseyeFunction.ORIGINAL_RANGE);
             if (range != null) {
                 for (Node node : this.nodes.get(range)) {
                     if (node != null) {
