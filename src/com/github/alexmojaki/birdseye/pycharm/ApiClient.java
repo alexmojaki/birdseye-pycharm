@@ -123,6 +123,9 @@ class ApiClient {
     }
 
     HashPresentItem[] getBodyHashesPresent(Collection<String> hashes) {
+        if (hashes.isEmpty()) {
+            return new HashPresentItem[]{};
+        }
         HashPresentItem[] hashArray = post("body_hashes_present/", hashes, HashPresentItem[].class);
         if (hashArray == null) {
             return new HashPresentItem[]{};
