@@ -76,16 +76,11 @@ public class Call {
     private void init(PsiElement psiFunction) {
         int functionStart = birdseyeFunction.fullRangeMarker.getStartOffset();
 
-        for (FunctionData.NodeRangesGroup nodeRangesGroup : functionData.node_ranges) {
-            for (FunctionData.NodeRange nodeRange : nodeRangesGroup.nodes) {
-//                if (!hasValue(nodeRange.node)) {
-//                    continue;
-//                }
-                Range range = new Range(nodeRange.start, nodeRange.end);
-                Node node = new Node(nodeRange, nodeRangesGroup.depth);
-                nodes.putValue(range, node);
-                node.rangeMarker = birdseyeFunction.rangeMarkers.get(range);
-            }
+        for (FunctionData.NodeRange nodeRange : functionData.node_ranges) {
+            Range range = new Range(nodeRange.start, nodeRange.end);
+            Node node = new Node(nodeRange);
+            nodes.putValue(range, node);
+            node.rangeMarker = birdseyeFunction.rangeMarkers.get(range);
         }
 
         SmartPointerManager smartPointerManager = SmartPointerManager.getInstance(project);
@@ -251,16 +246,12 @@ public class Call {
     }
 
     static class FunctionData {
-        NodeRangesGroup[] node_ranges;
+        NodeRange[] node_ranges;
         NodeRange[] loop_nodes;
         Map<Integer, int[]> node_loops;
 
-        static class NodeRangesGroup {
-            int depth;
-            NodeRange[] nodes;
-        }
-
         static class NodeRange {
+            int depth;
             int node;
             int start;
             int end;
@@ -289,22 +280,20 @@ public class Call {
         nodes.retainAll(nodesOverlappingWith(offset + 1));
         return nodes.stream()
                 .filter(n -> n.value() != null)
-                .max(Comparator.comparing(n -> n.depth))
+                .max(Comparator.comparing(n -> n.range.depth))
                 .orElse(null);
     }
 
     public class Node {
 
         FunctionData.NodeRange range;
-        int depth;
         RangeMarker rangeMarker;
         HideableRangeHighlighter selectedHighlighter;
 
         InspectorTreeNode inspectorTreeNode = null;
 
-        Node(FunctionData.NodeRange range, int depth) {
+        Node(FunctionData.NodeRange range) {
             this.range = range;
-            this.depth = depth;
 //            int f = functionRangeMarker.getStartOffset();
 //            rangeMarker = document.createRangeMarker(range.start + f, range.end + f, true);
 //            rangeMarker.putUserData(NODE_KEY, this);
