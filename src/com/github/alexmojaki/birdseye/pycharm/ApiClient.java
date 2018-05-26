@@ -62,16 +62,21 @@ class ApiClient {
     }
 
     private void notifyError(String message) {
-        MyProjectComponent component = MyProjectComponent.getInstance(project);
-        if (!inError &&
-                !(component.state.runServer && !
-                        (component.responsibleProcessMonitor().isRunning() &&
-                                component.responsibleProcessMonitor().runningTime() > 3000))) {
-            String title = "Error communicating with birdseye server";
-            component.notifyError(title, message);
-            inError = true;
+        if (inError) {
+            return;
         }
 
+        MyProjectComponent component = MyProjectComponent.getInstance(project);
+        if (component.state.runServer) {
+            ProcessMonitor monitor = component.responsibleProcessMonitor();
+            if (!(monitor.isRunning() && monitor.runningTime() > 3000)) {
+                return;
+            }
+        }
+
+        String title = "Error communicating with birdseye server";
+        component.notifyError(title, message);
+        inError = true;
     }
 
     private <T> T get(String path, Class<T> responseClass) {
