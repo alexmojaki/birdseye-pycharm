@@ -108,6 +108,7 @@ class ApiClient {
     static class CallsByHashResponse {
         List<CallMeta> calls;
         List<Range> ranges;
+        List<Range> loop_ranges;
     }
 
     CallsByHashResponse listCallsByBodyHash(String hash) {

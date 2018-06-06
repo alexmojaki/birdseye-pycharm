@@ -102,7 +102,7 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
                             "but never the function itself.</p></html>"
             );
         } else {
-            BirdseyeFunction function = new BirdseyeFunction(psiFunction, response.ranges, document);
+            BirdseyeFunction function = new BirdseyeFunction(psiFunction, response, document);
 
             final JTable table = new JBTableWithRowHeaders(true);
             centralComponent = table;

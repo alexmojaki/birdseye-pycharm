@@ -30,7 +30,6 @@ import static com.github.alexmojaki.birdseye.pycharm.Utils.psiDocument;
 public class Call {
 //    private static final Key<Node> NODE_KEY = Key.create(Node.class.getCanonicalName());
 
-    private String functionText;
     private CallData callData;
     CallPanel panel;
     private FunctionData functionData;
@@ -47,9 +46,7 @@ public class Call {
         Call call = new Call();
         DocumentEx document = psiDocument(psiFunction);
 
-        call.functionText = Utils.getFunctionText(psiFunction);
         call.project = psiFunction.getProject();
-
 
         ApiClient.CallResponse callResponse = MyProjectComponent.getInstance(call.project).apiClient.getCall(callMeta.id);
         if (callResponse == null) {
@@ -71,25 +68,22 @@ public class Call {
     }
 
     private void init(PsiElement psiFunction) {
-        int functionStart = birdseyeFunction.fullRangeMarker.getStartOffset();
-
         for (FunctionData.NodeRange nodeRange : functionData.node_ranges) {
-            Range range = new Range(nodeRange.start, nodeRange.end);
             Node node = new Node(nodeRange);
-            nodes.putValue(range, node);
+            nodes.putValue(nodeRange.plainRange(), node);
         }
 
         SmartPointerManager smartPointerManager = SmartPointerManager.getInstance(project);
 
         for (FunctionData.NodeRange loopNode : functionData.loop_nodes) {
+            RangeMarker rangeMarker = birdseyeFunction.loopRangeMarkers.get(loopNode.plainRange());
             final PsiElement[] loopElement = {null};
             PsiRecursiveElementWalkingVisitor visitor = new PsiRecursiveElementWalkingVisitor() {
                 @Override
                 protected void elementFinished(@NotNull PsiElement element) {
                     TextRange textRange = element.getTextRange();
-                    int start = textRange.getStartOffset() - functionStart;
-                    int end = textRange.getEndOffset() - functionStart;
-                    if (start == loopNode.start && end == loopNode.end) {
+                    if (textRange.getStartOffset() == rangeMarker.getStartOffset() &&
+                            textRange.getEndOffset() == rangeMarker.getEndOffset()) {
                         loopElement[0] = element;
                     }
                 }
@@ -286,8 +280,7 @@ public class Call {
 
     public class Node {
 
-        FunctionData.NodeRange range;
-        RangeMarker rangeMarker;
+        final FunctionData.NodeRange range;
         HideableRangeHighlighter selectedHighlighter;
 
         InspectorTreeNode inspectorTreeNode = null;
@@ -304,7 +297,7 @@ public class Call {
         }
 
         String text() {
-            return functionText.substring(range.start, range.end);
+            return birdseyeFunction.originalText.substring(range.start, range.end);
         }
 
         RangeMarker rangeMarker() {
