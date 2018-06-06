@@ -2,6 +2,7 @@ package com.github.alexmojaki.birdseye.pycharm;
 
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.RangeMarker;
+import com.intellij.openapi.editor.ex.DocumentEx;
 import com.intellij.openapi.util.Key;
 import com.intellij.psi.PsiElement;
 
@@ -15,8 +16,11 @@ public class BirdseyeFunction {
     Map<Range, RangeMarker> loopRangeMarkers = new HashMap<>();
     private RangeMarker fullRangeMarker;
     String originalText;
+    DocumentEx document;
 
-    BirdseyeFunction(PsiElement psiFunction, ApiClient.CallsByHashResponse response, Document document) {
+    BirdseyeFunction(PsiElement psiFunction, ApiClient.CallsByHashResponse response) {
+        document = Utils.psiDocument(psiFunction);
+
         int startOffset = Utils.getFunctionStart(psiFunction);
 
         for (Range range : response.ranges) {

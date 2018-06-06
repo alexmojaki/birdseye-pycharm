@@ -4,11 +4,8 @@ import com.intellij.codeHighlighting.Pass;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.editor.ex.DocumentEx;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.content.Content;
@@ -77,12 +74,6 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
 
     private void createCallsListPanel(PsiElement nameIdentifier) {
         PsiElement psiFunction = nameIdentifier.getParent();
-        VirtualFile virtualFile = psiFunction.getContainingFile().getVirtualFile();
-
-        DocumentEx document = (DocumentEx) FileDocumentManager.getInstance().getDocument(virtualFile);
-        if (document == null) {
-            return;
-        }
         final Project project = nameIdentifier.getProject();
         MyProjectComponent component = MyProjectComponent.getInstance(project);
 
@@ -102,7 +93,7 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
                             "but never the function itself.</p></html>"
             );
         } else {
-            BirdseyeFunction function = new BirdseyeFunction(psiFunction, response, document);
+            BirdseyeFunction function = new BirdseyeFunction(psiFunction, response);
 
             final JTable table = new JBTableWithRowHeaders(true);
             centralComponent = table;

@@ -25,15 +25,11 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static com.github.alexmojaki.birdseye.pycharm.Utils.psiDocument;
-
 public class Call {
-//    private static final Key<Node> NODE_KEY = Key.create(Node.class.getCanonicalName());
 
     private CallData callData;
     CallPanel panel;
     private FunctionData functionData;
-    DocumentEx document;
     private MultiMap<Range, Node> nodes = new MultiMap<>();
     Map<Integer, LoopNavigator> navigators = new TreeMap<>();
     Project project;
@@ -44,7 +40,6 @@ public class Call {
 
     static Call get(CallMeta callMeta, PsiElement psiFunction, BirdseyeFunction birdseyeFunction) {
         Call call = new Call();
-        DocumentEx document = psiDocument(psiFunction);
 
         call.project = psiFunction.getProject();
 
@@ -57,7 +52,6 @@ public class Call {
         call.functionData = callResponse.function.data;
         call.meta = callMeta;
         call.panel = new CallPanel(call);
-        call.document = document;
         MyProjectComponent.getInstance(call.project).calls.add(call);
         call.birdseyeFunction = birdseyeFunction;
         call.init(psiFunction);
@@ -97,6 +91,10 @@ public class Call {
         }
 
         update();
+    }
+
+    DocumentEx document() {
+        return birdseyeFunction.document;
     }
 
     private static final int[] EMPTY_INTS = {};
@@ -255,7 +253,7 @@ public class Call {
 
     private List<Node> nodesOverlappingWith(int offset) {
         List<Node> nodes = new ArrayList<>();
-        document.processRangeMarkersOverlappingWith(offset, offset, rangeMarker -> {
+        document().processRangeMarkersOverlappingWith(offset, offset, rangeMarker -> {
             Range range = rangeMarker.getUserData(BirdseyeFunction.ORIGINAL_RANGE);
             if (range != null) {
                 for (Node node : this.nodes.get(range)) {
@@ -309,7 +307,7 @@ public class Call {
                     rangeMarker().getStartOffset(),
                     rangeMarker().getEndOffset());
             String originalText = text();
-            String currentText = document.getText(textRange);
+            String currentText = document().getText(textRange);
             boolean result = originalText.equals(currentText);
             if (!result && range.classes.isEmpty() &&
                     !originalText.contains("'") &&

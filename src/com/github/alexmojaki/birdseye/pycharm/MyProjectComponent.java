@@ -311,7 +311,7 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
             @Override
             public void documentChanged(DocumentEvent event) {
                 for (Call call : calls) {
-                    if (!event.getDocument().equals(call.document)) {
+                    if (!event.getDocument().equals(call.document())) {
                         continue;
                     }
                     for (Call.Node node : new ArrayList<>(call.panel.selectedNodes)) {

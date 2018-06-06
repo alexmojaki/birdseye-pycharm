@@ -43,7 +43,7 @@ public class HoverListener extends EditorMouseMotionAdapter implements EditorMou
 
         Call.Node node = null;
         for (Call call : MyProjectComponent.getInstance(project).calls()) {
-            if (!call.document.equals(editor.getDocument())) {
+            if (!call.document().equals(editor.getDocument())) {
                 continue;
             }
 

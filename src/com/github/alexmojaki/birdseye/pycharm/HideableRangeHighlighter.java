@@ -37,7 +37,7 @@ public class HideableRangeHighlighter {
         Call call = node.call();
         Project project = call.project;
 
-        if (!(call.document.equals(editor.getDocument()) &&
+        if (!(call.document().equals(editor.getDocument()) &&
                 project.equals(editor.getProject()))) {
             return;
         }
