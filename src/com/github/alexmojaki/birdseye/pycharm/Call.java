@@ -77,7 +77,6 @@ public class Call {
             Range range = new Range(nodeRange.start, nodeRange.end);
             Node node = new Node(nodeRange);
             nodes.putValue(range, node);
-            node.rangeMarker = birdseyeFunction.rangeMarkers.get(range);
         }
 
         SmartPointerManager smartPointerManager = SmartPointerManager.getInstance(project);
@@ -253,6 +252,10 @@ public class Call {
             int start;
             int end;
             List<String> classes;
+
+            Range plainRange() {
+                return new Range(start, end);
+            }
         }
     }
 
@@ -304,10 +307,14 @@ public class Call {
             return functionText.substring(range.start, range.end);
         }
 
+        RangeMarker rangeMarker() {
+            return birdseyeFunction.rangeMarkers.get(range.plainRange());
+        }
+
         boolean isRangeInvalid() {
             TextRange textRange = new TextRange(
-                    rangeMarker.getStartOffset(),
-                    rangeMarker.getEndOffset());
+                    rangeMarker().getStartOffset(),
+                    rangeMarker().getEndOffset());
             String originalText = text();
             String currentText = document.getText(textRange);
             boolean result = originalText.equals(currentText);
