@@ -43,7 +43,8 @@ public class Call {
 
         call.project = psiFunction.getProject();
 
-        ApiClient.CallResponse callResponse = MyProjectComponent.getInstance(call.project).apiClient.getCall(callMeta.id);
+        MyProjectComponent component = MyProjectComponent.getInstance(call.project);
+        ApiClient.CallResponse callResponse = component.apiClient.getCall(callMeta.id);
         if (callResponse == null) {
             return null;
         }
@@ -52,9 +53,9 @@ public class Call {
         call.functionData = callResponse.function.data;
         call.meta = callMeta;
         call.panel = new CallPanel(call);
-        MyProjectComponent.getInstance(call.project).calls.add(call);
         call.birdseyeFunction = birdseyeFunction;
         call.init(psiFunction);
+        component.calls.add(call);
         return call;
     }
 
@@ -62,14 +63,14 @@ public class Call {
     }
 
     private void init(PsiElement psiFunction) {
-        for (FunctionData.NodeRange nodeRange : functionData.node_ranges) {
+        for (NodeRange nodeRange : functionData.node_ranges) {
             Node node = new Node(nodeRange);
             nodes.putValue(nodeRange.plainRange(), node);
         }
 
         SmartPointerManager smartPointerManager = SmartPointerManager.getInstance(project);
 
-        for (FunctionData.NodeRange loopNode : functionData.loop_nodes) {
+        for (NodeRange loopNode : functionData.loop_nodes) {
             RangeMarker rangeMarker = birdseyeFunction.loopRangeMarkers.get(loopNode.plainRange());
             final PsiElement[] loopElement = {null};
             PsiRecursiveElementWalkingVisitor visitor = new PsiRecursiveElementWalkingVisitor() {
@@ -121,6 +122,7 @@ public class Call {
     }
 
     public class ExpandedValue {
+
 
         JsonArray arr;
 
@@ -237,17 +239,17 @@ public class Call {
         NodeRange[] node_ranges;
         NodeRange[] loop_nodes;
         Map<Integer, int[]> node_loops;
+    }
 
-        static class NodeRange {
-            int depth;
-            int node;
-            int start;
-            int end;
-            List<String> classes;
+    static class NodeRange {
+        int depth;
+        int node;
+        int start;
+        int end;
+        List<String> classes;
 
-            Range plainRange() {
-                return new Range(start, end);
-            }
+        Range plainRange() {
+            return new Range(start, end);
         }
     }
 
@@ -278,12 +280,12 @@ public class Call {
 
     public class Node {
 
-        final FunctionData.NodeRange range;
+        final NodeRange range;
         HideableRangeHighlighter selectedHighlighter;
 
         InspectorTreeNode inspectorTreeNode = null;
 
-        Node(FunctionData.NodeRange range) {
+        Node(NodeRange range) {
             this.range = range;
 //            int f = functionRangeMarker.getStartOffset();
 //            rangeMarker = document.createRangeMarker(range.start + f, range.end + f, true);
