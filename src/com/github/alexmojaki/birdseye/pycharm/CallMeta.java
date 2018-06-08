@@ -44,10 +44,9 @@ class CallMeta {
             return "-";
         }
         return htmlList("ul",
-                Arrays
-                .stream(arguments)
-                .map(a -> StringEscapeUtils.escapeHtml(String.format("%s = %s", (Object[]) a)))
-                .collect(Collectors.toList()));
+                Utils.mapToList(
+                        arguments,
+                        a -> StringEscapeUtils.escapeHtml(String.format("%s = %s", (Object[]) a))));
     }
 
     String startTime() {

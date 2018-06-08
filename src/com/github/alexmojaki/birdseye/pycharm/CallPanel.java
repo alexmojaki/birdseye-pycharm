@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
+import static com.github.alexmojaki.birdseye.pycharm.Utils.mapToList;
 import static com.github.alexmojaki.birdseye.pycharm.Utils.tag;
 
 public class CallPanel extends JBPanel {
@@ -65,9 +66,9 @@ public class CallPanel extends JBPanel {
         tree.addTreeExpansionListener(new TreeExpansionListener() {
 
             private void processPath(TreeExpansionEvent event, BiConsumer<Integer, List<Integer>> func) {
-                List<Integer> path = Arrays.stream(event.getPath().getPath())
-                        .map(n -> ((InspectorTreeNode) n).index)
-                        .collect(Collectors.toList());
+                List<Integer> path = mapToList(
+                        event.getPath().getPath(),
+                        n -> ((InspectorTreeNode) n).index);
                 synchronized (tree) {
                     func.accept(path.get(1), path.subList(2, path.size()));
                 }

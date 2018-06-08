@@ -44,6 +44,8 @@ import java.util.*;
 import java.util.Timer;
 import java.util.stream.Collectors;
 
+import static com.github.alexmojaki.birdseye.pycharm.Utils.filterToList;
+
 @com.intellij.openapi.components.State(name = "birdseye.xml")
 public class MyProjectComponent extends AbstractProjectComponent implements PersistentStateComponent<State> {
 
@@ -154,9 +156,8 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
             toolWindow.setIcon(BIRDSEYE_ICON);
             toolWindow.getContentManager().addContentManagerListener(new ContentManagerAdapter() {
                 private Call getCall(Content content) {
-                    List<Call> matching = calls.stream()
-                            .filter(c -> c.toolWindowContent.equals(content))
-                            .collect(Collectors.toList());
+                    List<Call> matching = filterToList(calls,
+                            c -> c.toolWindowContent.equals(content));
                     if (matching.isEmpty()) {
                         return null;
                     }

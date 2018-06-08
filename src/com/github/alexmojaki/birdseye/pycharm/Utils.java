@@ -15,7 +15,10 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -101,4 +104,21 @@ public class Utils {
                 .collect(Collectors.joining("\n"));
         return tag(listTag, lis);
     }
+
+    static <T, R> List<R> mapToList(Collection<? extends T> collection, Function<? super T, ? extends R> function) {
+        return collection.stream().map(function).collect(Collectors.toList());
+    }
+
+    static <T, R> List<R> mapToList(T[] array, Function<? super T, ? extends R> function) {
+        return Arrays.stream(array).map(function).collect(Collectors.toList());
+    }
+
+    static <T> List<T> filterToList(Collection<? extends T> collection, Predicate<T> predicate) {
+        return collection.stream().filter(predicate).collect(Collectors.toList());
+    }
+
+    static <T> List<T> filterToList(T[] array, Predicate<T> predicate) {
+        return Arrays.stream(array).filter(predicate).collect(Collectors.toList());
+    }
+
 }

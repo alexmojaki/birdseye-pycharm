@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.github.alexmojaki.birdseye.pycharm.Utils.mapToList;
 import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
 
 public class MyApplicationComponent implements ApplicationComponent {
@@ -37,12 +38,11 @@ public class MyApplicationComponent implements ApplicationComponent {
             Map<String, MyProjectComponent> forPort = table.row(port);
             for (MyProjectComponent component : forPort.values()) {
                 if (forPort.size() > 1) {
-                    List<String> items = forPort.values()
-                            .stream()
-                            .map(c -> String.format("%s (<code>%s</code>)",
+                    List<String> items = mapToList(
+                            forPort.values(),
+                            c -> String.format("%s (<code>%s</code>)",
                                     escapeHtml(c.getProject().getName()),
-                                    escapeHtml(component.state.dbUrl)))
-                            .collect(Collectors.toList());
+                                    escapeHtml(component.state.dbUrl)));
 
                     String title = "Multiple projects running birdseye on the same port with different database URLs";
                     String message = Utils.htmlList("ul", items);

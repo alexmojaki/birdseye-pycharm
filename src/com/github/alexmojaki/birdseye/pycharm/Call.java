@@ -428,11 +428,8 @@ public class Call {
     }
 
     private void addTempHighlighters(Predicate<Node> predicate, TextAttributes attributes) {
-        List<Node> filteredNodes = nodes.values().stream()
-                .filter(predicate)
-                .collect(Collectors.toList());
 
-        for (Node node : filteredNodes) {
+        for (Node node : Utils.filterToList(nodes.values(), predicate)) {
             tempHighlighters.add(node.addRangeHighlighter(attributes));
         }
 
@@ -448,9 +445,7 @@ public class Call {
             if (navigator == null) {
                 continue;
             }
-            navigator.indices = Arrays.stream(iterations)
-                    .map(i -> i.index)
-                    .collect(Collectors.toList());
+            navigator.indices = Utils.mapToList(iterations, i -> i.index);
             updateLoopIndices(iterations[navigator.currentIteration()].loops);
         }
     }
