@@ -85,6 +85,10 @@ public class Call {
             };
             visitor.visitElement(psiFunction);
 
+            if (loopElement[0] == null) {
+                continue;
+            }
+
             LoopNavigator navigator = new LoopNavigator();
             navigator.pointer = smartPointerManager.createSmartPsiElementPointer(loopElement[0]);
             navigator.loopIndex = loopNode.node;
@@ -330,10 +334,11 @@ public class Call {
         ExpandedValue value() {
             JsonElement element = callData.node_values.get(treeIndex());
             for (int loopIndex : functionData.node_loops.getOrDefault(treeIndex(), EMPTY_INTS)) {
-                if (element == null) {
+                LoopNavigator navigator = navigator(loopIndex);
+                if (element == null || navigator == null) {
                     return null;
                 }
-                element = element.getAsJsonObject().get(String.valueOf(navigator(loopIndex).currentIteration()));
+                element = element.getAsJsonObject().get(String.valueOf(navigator.currentIteration()));
             }
             if (element == null) {
                 return null;
@@ -440,6 +445,9 @@ public class Call {
         for (Integer loopIndex : loops.keySet()) {
             Iteration[] iterations = loops.get(loopIndex);
             LoopNavigator navigator = navigator(loopIndex);
+            if (navigator == null) {
+                continue;
+            }
             navigator.indices = Arrays.stream(iterations)
                     .map(i -> i.index)
                     .collect(Collectors.toList());
