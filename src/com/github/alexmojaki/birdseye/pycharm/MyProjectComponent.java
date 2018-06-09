@@ -44,7 +44,7 @@ import java.util.*;
 import java.util.Timer;
 import java.util.stream.Collectors;
 
-import static com.github.alexmojaki.birdseye.pycharm.Utils.filterToList;
+import static com.github.alexmojaki.birdseye.pycharm.Utils.*;
 
 @com.intellij.openapi.components.State(name = "birdseye.xml")
 public class MyProjectComponent extends AbstractProjectComponent implements PersistentStateComponent<State> {
@@ -98,7 +98,7 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
     }
 
     private void checkHashes() {
-        List<Editor> activeEditors = activeEditors();
+        List<Editor> activeEditors = activeEditors(myProject);
 
         Set<String> newFunctionHashes = new HashSet<>();
         PsiRecursiveElementWalkingVisitor visitor = new PsiRecursiveElementWalkingVisitor() {
@@ -112,7 +112,7 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
                     return;
                 }
 
-                String hash = Utils.hashFunction(function);
+                String hash = hashFunction(function);
                 newFunctionHashes.add(hash);
             }
         };
@@ -207,7 +207,7 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
     private void updateAllThings() {
         DaemonCodeAnalyzer.getInstance(myProject).restart();
         DumbService.getInstance(myProject).smartInvokeLater(() -> {
-            for (Editor editor : activeEditors()) {
+            for (Editor editor : activeEditors(myProject)) {
                 editor.getComponent().revalidate();
                 editor.getComponent().repaint();
             }
@@ -264,10 +264,6 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
             return Collections.emptyList();
         }
         return calls;
-    }
-
-    private List<Editor> activeEditors() {
-        return Utils.activeEditors(myProject);
     }
 
     void setCallsListContent(Content content) {

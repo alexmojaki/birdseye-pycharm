@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import static com.github.alexmojaki.birdseye.pycharm.Utils.htmlList;
+import static com.github.alexmojaki.birdseye.pycharm.Utils.*;
 
 class ApiClient {
     private final Project project;
@@ -49,7 +49,7 @@ class ApiClient {
                 return null;
             }
             String content = EntityUtils.toString(response.getEntity());
-            T result = Utils.GSON.fromJson(content, responseClass);
+            T result = GSON.fromJson(content, responseClass);
             inError = false;
             return result;
         } catch (IOException e) {
@@ -84,7 +84,7 @@ class ApiClient {
     @SuppressWarnings("SameParameterValue")
     private <T> T post(String path, Object body, Class<T> responseClass) {
         Request request = Request.Post(url(path))
-                .bodyString(Utils.GSON.toJson(body), ContentType.APPLICATION_JSON);
+                .bodyString(GSON.toJson(body), ContentType.APPLICATION_JSON);
         return request(request, responseClass);
     }
 

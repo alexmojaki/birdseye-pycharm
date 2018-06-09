@@ -25,8 +25,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
-import static com.github.alexmojaki.birdseye.pycharm.Utils.mapToList;
-import static com.github.alexmojaki.birdseye.pycharm.Utils.tag;
+import static com.github.alexmojaki.birdseye.pycharm.Utils.*;
 
 public class CallPanel extends JBPanel {
     private final DefaultTreeModel inspector = new DefaultTreeModel(new InspectorTreeNode.Root());

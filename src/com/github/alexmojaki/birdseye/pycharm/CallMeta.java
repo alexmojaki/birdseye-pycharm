@@ -5,12 +5,9 @@ import org.ocpsoft.prettytime.PrettyTime;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.stream.Collectors;
 
-import static com.github.alexmojaki.birdseye.pycharm.Utils.htmlList;
-import static com.github.alexmojaki.birdseye.pycharm.Utils.tag;
+import static com.github.alexmojaki.birdseye.pycharm.Utils.*;
 
 class CallMeta {
 
@@ -44,7 +41,7 @@ class CallMeta {
             return "-";
         }
         return htmlList("ul",
-                Utils.mapToList(
+                mapToList(
                         arguments,
                         a -> StringEscapeUtils.escapeHtml(String.format("%s = %s", (Object[]) a))));
     }

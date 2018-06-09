@@ -27,6 +27,8 @@ import java.awt.event.MouseEvent;
 import java.util.Collection;
 import java.util.List;
 
+import static com.github.alexmojaki.birdseye.pycharm.Utils.*;
+
 public class EyeLineMarkerProvider implements LineMarkerProvider {
 
 
@@ -48,7 +50,7 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
                 continue;
             }
 
-            String hash = Utils.hashFunction(function);
+            String hash = hashFunction(function);
             MyProjectComponent component = MyProjectComponent.getInstance(element.getProject());
             Boolean hasCalls = component.functionHashes.get(hash);
             if (hasCalls == null) {
@@ -77,7 +79,7 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
         final Project project = nameIdentifier.getProject();
         MyProjectComponent component = MyProjectComponent.getInstance(project);
 
-        String hash = Utils.hashFunction(psiFunction);
+        String hash = hashFunction(psiFunction);
 
         ApiClient.CallsByHashResponse response = component.apiClient.listCallsByBodyHash(hash);
         if (response == null) {

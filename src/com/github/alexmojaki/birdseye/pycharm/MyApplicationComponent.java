@@ -11,9 +11,8 @@ import com.intellij.openapi.project.ProjectManager;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import static com.github.alexmojaki.birdseye.pycharm.Utils.mapToList;
+import static com.github.alexmojaki.birdseye.pycharm.Utils.*;
 import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
 
 public class MyApplicationComponent implements ApplicationComponent {
@@ -45,9 +44,9 @@ public class MyApplicationComponent implements ApplicationComponent {
                                     escapeHtml(component.state.dbUrl)));
 
                     String title = "Multiple projects running birdseye on the same port with different database URLs";
-                    String message = Utils.htmlList("ul", items);
+                    String message = htmlList("ul", items);
                     component.notifyError(title, message);
-                    component.processMonitor.errorMessage = Utils.tag("html",
+                    component.processMonitor.errorMessage = tag("html",
                             title + " <br> " + message);
 
                 } else {

@@ -11,6 +11,8 @@ import com.intellij.openapi.project.Project;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.github.alexmojaki.birdseye.pycharm.Utils.*;
+
 public class HideableRangeHighlighter {
 
     private final Call.Node node;
@@ -28,7 +30,7 @@ public class HideableRangeHighlighter {
             return;
         }
         Project project = node.call().project;
-        for (Editor editor : Utils.activeEditors(project)) {
+        for (Editor editor : activeEditors(project)) {
             addFor(editor);
         }
     }
@@ -57,7 +59,7 @@ public class HideableRangeHighlighter {
     void hide() {
         Project project = node.call().project;
         DumbService.getInstance(project).smartInvokeLater(() -> {
-            List<Editor> editors = Utils.activeEditors(project);
+            List<Editor> editors = activeEditors(project);
             for (RangeHighlighter highlighter : highlighters) {
                 highlighter.dispose();
                 for (Editor editor : editors) {

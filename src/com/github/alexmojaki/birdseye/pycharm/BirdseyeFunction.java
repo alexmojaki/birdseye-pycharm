@@ -9,6 +9,8 @@ import com.intellij.psi.PsiElement;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.github.alexmojaki.birdseye.pycharm.Utils.*;
+
 public class BirdseyeFunction {
 
     static final Key<Range> ORIGINAL_RANGE = Key.create("ORIGINAL_RANGE");
@@ -19,9 +21,9 @@ public class BirdseyeFunction {
     DocumentEx document;
 
     BirdseyeFunction(PsiElement psiFunction, ApiClient.CallsByHashResponse response) {
-        document = Utils.psiDocument(psiFunction);
+        document = psiDocument(psiFunction);
 
-        int startOffset = Utils.getFunctionStart(psiFunction);
+        int startOffset = getFunctionStart(psiFunction);
 
         for (Range range : response.ranges) {
             RangeMarker rangeMarker = createRangeMarker(document, startOffset, range);
@@ -38,7 +40,7 @@ public class BirdseyeFunction {
                 startOffset,
                 psiFunction.getTextRange().getEndOffset());
 
-        originalText = Utils.getFunctionText(psiFunction);
+        originalText = getFunctionText(psiFunction);
     }
 
     private RangeMarker createRangeMarker(Document document, int startOffset, Range range) {

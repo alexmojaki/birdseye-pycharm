@@ -23,7 +23,8 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
+
+import static com.github.alexmojaki.birdseye.pycharm.Utils.*;
 
 public class Call {
 
@@ -203,7 +204,7 @@ public class Call {
         }
 
         Map meta() {
-            return Utils.GSON.fromJson(arr.get(2), Map.class);
+            return GSON.fromJson(arr.get(2), Map.class);
         }
 
         boolean isStatement() {
@@ -354,7 +355,7 @@ public class Call {
         }
 
         InspectorTreeNode freshInspectorTreeNode() {
-            String prefix = Utils.truncate(Utils.collapseWhitespace(text()), 50);
+            String prefix = truncate(collapseWhitespace(text()), 50);
             inspectorTreeNode = value().treeNode(prefix);
             inspectorTreeNode.index = treeIndex();
             return inspectorTreeNode;
@@ -429,7 +430,7 @@ public class Call {
 
     private void addTempHighlighters(Predicate<Node> predicate, TextAttributes attributes) {
 
-        for (Node node : Utils.filterToList(nodes.values(), predicate)) {
+        for (Node node : filterToList(nodes.values(), predicate)) {
             tempHighlighters.add(node.addRangeHighlighter(attributes));
         }
 
@@ -445,7 +446,7 @@ public class Call {
             if (navigator == null) {
                 continue;
             }
-            navigator.indices = Utils.mapToList(iterations, i -> i.index);
+            navigator.indices = mapToList(iterations, i -> i.index);
             updateLoopIndices(iterations[navigator.currentIteration()].loops);
         }
     }
