@@ -28,8 +28,8 @@ import java.util.stream.Collectors;
 import static com.github.alexmojaki.birdseye.pycharm.Utils.*;
 
 public class CallPanel extends JBPanel {
-    private final DefaultTreeModel inspector = new DefaultTreeModel(new InspectorTreeNode.Root());
-    private final Tree tree = new Tree(inspector);
+    private final DefaultTreeModel model = new DefaultTreeModel(new InspectorTreeNode.Root());
+    private final Tree tree = new Tree(model);
     final List<Call.Node> selectedNodes = new ArrayList<>();
     private final MultiMap<Integer, List<Integer>> openPaths = MultiMap.createSet();
     private CardLayout cardLayout = new CardLayout();
@@ -105,7 +105,7 @@ public class CallPanel extends JBPanel {
             if (treeNode == null) {
                 return;
             }
-            inspector.insertNodeInto(treeNode, root, 0);
+            model.insertNodeInto(treeNode, root, 0);
             selectedNodes.add(0, node);
         }
         cardLayout.show(cardPanel, selectedNodes.isEmpty() ? "explanation" : "tree");
@@ -113,16 +113,16 @@ public class CallPanel extends JBPanel {
     }
 
     private DefaultMutableTreeNode root() {
-        return (DefaultMutableTreeNode) inspector.getRoot();
+        return (DefaultMutableTreeNode) model.getRoot();
     }
 
     public void updateValues() {
         DefaultMutableTreeNode root = root();
         root.removeAllChildren();
         for (Call.Node node : Lists.reverse(selectedNodes)) {
-            inspector.insertNodeInto(node.freshInspectorTreeNode(), root, 0);
+            model.insertNodeInto(node.freshInspectorTreeNode(), root, 0);
         }
-        inspector.nodeStructureChanged(root);
+        model.nodeStructureChanged(root);
 
         List<TreePath> paths = new ArrayList<>();
         synchronized (tree) {

@@ -327,9 +327,7 @@ public class Call {
         }
 
         HideableRangeHighlighter addRangeHighlighter(TextAttributes attributes) {
-            return new HideableRangeHighlighter(
-                    this,
-                    attributes);
+            return new HideableRangeHighlighter(this, attributes);
         }
 
         ExpandedValue value() {
@@ -429,11 +427,9 @@ public class Call {
     }
 
     private void addTempHighlighters(Predicate<Node> predicate, TextAttributes attributes) {
-
         for (Node node : filterToList(nodes.values(), predicate)) {
             tempHighlighters.add(node.addRangeHighlighter(attributes));
         }
-
     }
 
     private void updateLoopIndices(Loops loops) {
