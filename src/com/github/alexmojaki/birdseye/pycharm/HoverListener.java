@@ -67,12 +67,12 @@ public class HoverListener extends EditorMouseMotionAdapter implements EditorMou
             return;
         }
 
-        Call.ExpandedValue expandedValue = node.value();
-        if (expandedValue == null || expandedValue.isNotInteresting()) {
+        Call.NodeValue nodeValue = node.value();
+        if (nodeValue == null || nodeValue.isNotInteresting()) {
             return;
         }
         HoverValueEditorLinePainter.moveExtensionToBeginning();
-        HoverValueEditorLinePainter.repr = expandedValue.repr();
+        HoverValueEditorLinePainter.repr = nodeValue.repr();
         HoverValueEditorLinePainter.currentFile = FileDocumentManager.getInstance().getFile(e.getEditor().getDocument());
         HoverValueEditorLinePainter.currentProject = project;
         HoverValueEditorLinePainter.currentLineNumber = pos.line;
@@ -87,7 +87,7 @@ public class HoverListener extends EditorMouseMotionAdapter implements EditorMou
         if (currentNode == null || currentNode.isRangeInvalid()) {
             return;
         }
-        Call.ExpandedValue value = currentNode.value();
+        Call.NodeValue value = currentNode.value();
         if (value == null || value.isNotInteresting()) {
             return;
         }

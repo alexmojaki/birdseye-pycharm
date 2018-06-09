@@ -126,11 +126,11 @@ public class Call {
         processHighlighters(HideableRangeHighlighter::show);
     }
 
-    public class ExpandedValue {
+    public class NodeValue {
 
         JsonArray arr;
 
-        ExpandedValue(JsonArray arr) {
+        NodeValue(JsonArray arr) {
             this.arr = arr;
         }
 
@@ -172,7 +172,7 @@ public class Call {
             for (int i = 3; i < arr.size(); i++) {
                 JsonArray subarr = arr.get(i).getAsJsonArray();
                 String childPrefix = subarr.get(0).getAsString();
-                ExpandedValue child = new ExpandedValue(subarr.get(1).getAsJsonArray());
+                NodeValue child = new NodeValue(subarr.get(1).getAsJsonArray());
                 InspectorTreeNode childTreeNode = child.treeNode(i - 3, childPrefix);
                 result.add(childTreeNode);
             }
@@ -329,7 +329,7 @@ public class Call {
             return new HideableRangeHighlighter(this, attributes);
         }
 
-        ExpandedValue value() {
+        NodeValue value() {
             JsonElement element = callData.node_values.get(treeIndex());
             for (int loopIndex : functionData.node_loops.getOrDefault(treeIndex(), EMPTY_INTS)) {
                 LoopNavigator navigator = navigator(loopIndex);
@@ -341,7 +341,7 @@ public class Call {
             if (element == null) {
                 return null;
             }
-            return new ExpandedValue(element.getAsJsonArray());
+            return new NodeValue(element.getAsJsonArray());
         }
 
         InspectorTreeNode inspectorTreeNode() {
@@ -419,7 +419,7 @@ public class Call {
         attributes.setEffectType(EffectType.ROUNDED_BOX);
         attributes.setEffectColor(JBColor.RED);
         addTempHighlighters(n -> {
-            ExpandedValue value = n.value();
+            NodeValue value = n.value();
             return value != null && value.isException();
         }, attributes);
     }
