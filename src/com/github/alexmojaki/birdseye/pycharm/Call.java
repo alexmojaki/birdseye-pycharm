@@ -128,14 +128,13 @@ public class Call {
 
     public class ExpandedValue {
 
-
         JsonArray arr;
 
         ExpandedValue(JsonArray arr) {
             this.arr = arr;
         }
 
-        InspectorTreeNode treeNode(String prefix) {
+        InspectorTreeNode treeNode(int index, String prefix) {
             InspectorTreeNode result;
             if (isExpression()) {
                 String typeName = typeName();
@@ -168,13 +167,13 @@ public class Call {
             }
 
             result.label = prefix;
+            result.index = index;
 
             for (int i = 3; i < arr.size(); i++) {
                 JsonArray subarr = arr.get(i).getAsJsonArray();
                 String childPrefix = subarr.get(0).getAsString();
                 ExpandedValue child = new ExpandedValue(subarr.get(1).getAsJsonArray());
-                InspectorTreeNode childTreeNode = child.treeNode(childPrefix);
-                childTreeNode.index = i - 3;
+                InspectorTreeNode childTreeNode = child.treeNode(i - 3, childPrefix);
                 result.add(childTreeNode);
             }
 
@@ -354,8 +353,7 @@ public class Call {
 
         InspectorTreeNode freshInspectorTreeNode() {
             String prefix = truncate(collapseWhitespace(text()), 50);
-            inspectorTreeNode = value().treeNode(prefix);
-            inspectorTreeNode.index = treeIndex();
+            inspectorTreeNode = value().treeNode(treeIndex(), prefix);
             return inspectorTreeNode;
         }
 
