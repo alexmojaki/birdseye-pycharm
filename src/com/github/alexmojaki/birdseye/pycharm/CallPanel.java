@@ -18,6 +18,8 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.*;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -81,6 +83,19 @@ public class CallPanel extends JBPanel {
             @Override
             public void treeCollapsed(TreeExpansionEvent event) {
                 processPath(event, openPaths::remove);
+            }
+        });
+
+        tree.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_DELETE ||
+                        e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
+                    selectedNodes.keySet().stream()
+                            .filter(n -> n.inspectorTreeNode == tree.getLastSelectedPathComponent())
+                            .findAny()
+                            .ifPresent(CallPanel.this::toggleSelectedNode);
+                }
             }
         });
     }
