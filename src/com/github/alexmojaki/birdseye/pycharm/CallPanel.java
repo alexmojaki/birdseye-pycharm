@@ -9,6 +9,7 @@ import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.containers.MultiMap;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -26,6 +27,7 @@ import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import static com.github.alexmojaki.birdseye.pycharm.Utils.*;
+import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
 
 public class CallPanel extends JBPanel {
     private final DefaultTreeModel model = new DefaultTreeModel(new InspectorTreeNode.Root());
@@ -41,7 +43,7 @@ public class CallPanel extends JBPanel {
         String information = Arrays.stream(new String[][]{
                 {"Arguments", call.meta.argumentsList()},
                 {"Start time", call.meta.startTime()},
-                {"Result", tag("pre", call.meta.longResult())},
+                {"Result", tag("pre", escapeHtml(call.meta.longResult()))},
         }).map(a -> tag("b", a[0] + ": ") + a[1]
         ).collect(Collectors.joining("\n<br>\n"));
         JBLabel label = new JBLabel(tag("html",

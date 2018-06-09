@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import static com.github.alexmojaki.birdseye.pycharm.Utils.*;
+import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
 
 class CallMeta {
 
@@ -43,7 +44,7 @@ class CallMeta {
         return htmlList("ul",
                 mapToList(
                         arguments,
-                        a -> StringEscapeUtils.escapeHtml(String.format("%s = %s", (Object[]) a))));
+                        a -> escapeHtml(String.format("%s = %s", (Object[]) a))));
     }
 
     String startTime() {

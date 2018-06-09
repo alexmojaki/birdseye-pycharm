@@ -92,8 +92,8 @@ public class Call {
 
             LoopNavigator navigator = new LoopNavigator();
             navigator.pointer = smartPointerManager.createSmartPsiElementPointer(loopElement[0]);
-            navigator.loopIndex = loopNode.node;
-            navigators.put(navigator.loopIndex, navigator);
+            navigator.treeIndex = loopNode.node;
+            navigators.put(navigator.treeIndex, navigator);
         }
 
         update();
@@ -286,14 +286,10 @@ public class Call {
 
         final NodeRange range;
         HideableRangeHighlighter selectedHighlighter;
-
         InspectorTreeNode inspectorTreeNode = null;
 
         Node(NodeRange range) {
             this.range = range;
-//            int f = functionRangeMarker.getStartOffset();
-//            rangeMarker = document.createRangeMarker(range.start + f, range.end + f, true);
-//            rangeMarker.putUserData(NODE_KEY, this);
         }
 
         int treeIndex() {
@@ -368,7 +364,7 @@ public class Call {
 
     class LoopNavigator {
         int iterationIndex = 0;
-        int loopIndex;
+        int treeIndex;
         SmartPsiElementPointer pointer;
         List<Integer> indices;
 
