@@ -1,6 +1,5 @@
 package com.github.alexmojaki.birdseye.pycharm;
 
-import com.google.common.collect.Lists;
 import com.intellij.openapi.editor.markup.EffectType;
 import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.ui.ColoredTreeCellRenderer;
@@ -19,8 +18,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
@@ -32,7 +30,7 @@ import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
 public class CallPanel extends JBPanel {
     private final DefaultTreeModel model = new DefaultTreeModel(new InspectorTreeNode.Root());
     private final Tree tree = new Tree(model);
-    final List<Call.Node> selectedNodes = new ArrayList<>();
+    final Map<Call.Node, HideableRangeHighlighter> selectedNodes = new LinkedHashMap<>();
     private final MultiMap<Integer, List<Integer>> openPaths = MultiMap.createSet();
     private CardLayout cardLayout = new CardLayout();
     private JBPanel cardPanel = new JBPanel(cardLayout);
@@ -88,19 +86,10 @@ public class CallPanel extends JBPanel {
     }
 
     void toggleSelectedNode(Call.Node node) {
-        if (node.selectedHighlighter != null) {
-            node.selectedHighlighter.hide();
-            node.selectedHighlighter = null;
-        } else {
-            TextAttributes attributes = new TextAttributes();
-            attributes.setEffectColor(JBColor.blue);
-            attributes.setEffectType(EffectType.ROUNDED_BOX);
-            node.selectedHighlighter = node.addRangeHighlighter(attributes);
-        }
-
         DefaultMutableTreeNode root = root();
         DefaultMutableTreeNode treeNode = node.inspectorTreeNode();
-        if (selectedNodes.contains(node)) {
+        if (selectedNodes.containsKey(node)) {
+            selectedNodes.get(node).hide();
             selectedNodes.remove(node);
             treeNode.removeFromParent();
         } else {
@@ -108,7 +97,11 @@ public class CallPanel extends JBPanel {
                 return;
             }
             model.insertNodeInto(treeNode, root, 0);
-            selectedNodes.add(node);
+
+            TextAttributes attributes = new TextAttributes();
+            attributes.setEffectColor(JBColor.blue);
+            attributes.setEffectType(EffectType.ROUNDED_BOX);
+            selectedNodes.put(node, node.addRangeHighlighter(attributes));
         }
         cardLayout.show(cardPanel, selectedNodes.isEmpty() ? "explanation" : "tree");
         updateValues();
@@ -121,7 +114,7 @@ public class CallPanel extends JBPanel {
     public void updateValues() {
         DefaultMutableTreeNode root = root();
         root.removeAllChildren();
-        for (Call.Node node : selectedNodes) {
+        for (Call.Node node : selectedNodes.keySet()) {
             model.insertNodeInto(node.freshInspectorTreeNode(), root, 0);
         }
         model.nodeStructureChanged(root);

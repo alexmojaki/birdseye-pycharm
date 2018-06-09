@@ -311,7 +311,7 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
                     if (!event.getDocument().equals(call.document())) {
                         continue;
                     }
-                    for (Call.Node node : new ArrayList<>(call.panel.selectedNodes)) {
+                    for (Call.Node node : new ArrayList<>(call.panel.selectedNodes.keySet())) {
                         if (node.isRangeInvalid()) {
                             call.panel.toggleSelectedNode(node);
                         }

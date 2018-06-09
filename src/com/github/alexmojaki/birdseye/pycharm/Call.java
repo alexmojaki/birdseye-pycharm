@@ -110,7 +110,7 @@ public class Call {
             action.consume(highlighter);
         }
         for (Node node : nodes.values()) {
-            HideableRangeHighlighter highlighter = node.selectedHighlighter;
+            HideableRangeHighlighter highlighter = panel.selectedNodes.get(node);
             if (highlighter != null) {
                 action.consume(highlighter);
             }
@@ -285,7 +285,6 @@ public class Call {
     public class Node {
 
         final NodeRange range;
-        HideableRangeHighlighter selectedHighlighter;
         InspectorTreeNode inspectorTreeNode = null;
 
         Node(NodeRange range) {
