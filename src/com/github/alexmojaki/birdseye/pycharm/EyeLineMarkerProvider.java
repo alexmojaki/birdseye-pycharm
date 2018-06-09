@@ -155,7 +155,7 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
                     content.setIcon(AllIcons.General.Run);
                 }
 
-                contentManager.setSelectedContent(content);
+                contentManager.setSelectedContent(content);  // TODO move after the calls list is created
             };
 
             table.addMouseListener(new MouseAdapter() {

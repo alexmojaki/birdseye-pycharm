@@ -1,4 +1,5 @@
 refactor
+comment
 test
-release python side
+release python side (add database versioning)
 set correct min version

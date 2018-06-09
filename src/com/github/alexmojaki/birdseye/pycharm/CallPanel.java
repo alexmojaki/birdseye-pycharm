@@ -9,7 +9,6 @@ import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.containers.MultiMap;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -26,7 +25,8 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
-import static com.github.alexmojaki.birdseye.pycharm.Utils.*;
+import static com.github.alexmojaki.birdseye.pycharm.Utils.mapToList;
+import static com.github.alexmojaki.birdseye.pycharm.Utils.tag;
 import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
 
 public class CallPanel extends JBPanel {
@@ -108,7 +108,7 @@ public class CallPanel extends JBPanel {
                 return;
             }
             model.insertNodeInto(treeNode, root, 0);
-            selectedNodes.add(0, node);
+            selectedNodes.add(node);
         }
         cardLayout.show(cardPanel, selectedNodes.isEmpty() ? "explanation" : "tree");
         updateValues();
@@ -121,7 +121,7 @@ public class CallPanel extends JBPanel {
     public void updateValues() {
         DefaultMutableTreeNode root = root();
         root.removeAllChildren();
-        for (Call.Node node : Lists.reverse(selectedNodes)) {
+        for (Call.Node node : selectedNodes) {
             model.insertNodeInto(node.freshInspectorTreeNode(), root, 0);
         }
         model.nodeStructureChanged(root);
@@ -131,7 +131,7 @@ public class CallPanel extends JBPanel {
             for (int i = 0; i < root.getChildCount(); i++) {
                 InspectorTreeNode valueRoot = (InspectorTreeNode) root.getChildAt(i);
                 for (List<Integer> path : openPaths.get(valueRoot.index)) {
-                    paths.add(getIndexPath(valueRoot, path));
+                    paths.add(indexToTreePath(valueRoot, path));
                 }
             }
         }
@@ -141,7 +141,7 @@ public class CallPanel extends JBPanel {
         }
     }
 
-    private TreePath getIndexPath(TreeNode root, List<Integer> path) {
+    private TreePath indexToTreePath(TreeNode root, List<Integer> path) {
         for (Integer index : path) {
             if (index >= root.getChildCount()) {
                 return null;
