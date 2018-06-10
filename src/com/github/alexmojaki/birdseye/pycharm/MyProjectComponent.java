@@ -34,7 +34,6 @@ import com.jetbrains.python.packaging.PyPackageManager;
 import com.jetbrains.python.packaging.PyPackageManagerUI;
 import com.jetbrains.python.packaging.PyPackageUtil;
 import com.jetbrains.python.psi.PyFunction;
-import com.jetbrains.python.psi.impl.PyFunctionImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -107,7 +106,7 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
                 if (!(element instanceof PyFunction)) {
                     return;
                 }
-                PyFunctionImpl function = (PyFunctionImpl) element;
+                PyFunction function = (PyFunction) element;
                 if (function.getNameIdentifier() == null) {
                     return;
                 }

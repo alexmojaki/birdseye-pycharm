@@ -4,7 +4,7 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.RangeMarker;
 import com.intellij.openapi.editor.ex.DocumentEx;
 import com.intellij.openapi.util.Key;
-import com.intellij.psi.PsiElement;
+import com.jetbrains.python.psi.PyFunction;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,8 +20,8 @@ public class BirdseyeFunction {
     String originalText;
     DocumentEx document;
 
-    BirdseyeFunction(PsiElement psiFunction, ApiClient.CallsByHashResponse response) {
-        document = psiDocument(psiFunction);
+    BirdseyeFunction(PyFunction psiFunction, ApiClient.CallsByHashResponse response) {
+        document = psiElementDocument(psiFunction);
 
         int startOffset = getFunctionStart(psiFunction);
 

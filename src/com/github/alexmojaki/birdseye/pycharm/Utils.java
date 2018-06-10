@@ -11,6 +11,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.tree.TokenSet;
 import com.jetbrains.python.PyTokenTypes;
+import com.jetbrains.python.psi.PyFunction;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -42,18 +43,18 @@ public class Utils {
     }
 
     @NotNull
-    static String hashFunction(PsiElement function) {
+    static String hashFunction(PyFunction function) {
         return DigestUtils.sha256Hex(getFunctionText(function));
     }
 
-    static String getFunctionText(PsiElement function) {
+    static String getFunctionText(PyFunction function) {
         int start = getFunctionStart(function) - function.getTextRange().getStartOffset();
         String text = function.getText().substring(start);
         assert text.startsWith("def");
         return text.trim();
     }
 
-    static int getFunctionStart(PsiElement function) {
+    static int getFunctionStart(PyFunction function) {
         return function
                 .getNode()
                 .getChildren(TokenSet.create(PyTokenTypes.DEF_KEYWORD))
@@ -82,8 +83,8 @@ public class Utils {
     }
 
     @NotNull
-    static DocumentEx psiDocument(PsiElement psiFunction) {
-        VirtualFile virtualFile = psiFunction.getContainingFile().getVirtualFile();
+    static DocumentEx psiElementDocument(PsiElement element) {
+        VirtualFile virtualFile = element.getContainingFile().getVirtualFile();
         DocumentEx document = (DocumentEx) FileDocumentManager.getInstance().getDocument(virtualFile);
         assert document != null;
         return document;

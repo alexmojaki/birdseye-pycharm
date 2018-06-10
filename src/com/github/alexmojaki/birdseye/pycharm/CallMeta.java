@@ -1,6 +1,5 @@
 package com.github.alexmojaki.birdseye.pycharm;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.ocpsoft.prettytime.PrettyTime;
 
 import java.text.ParseException;

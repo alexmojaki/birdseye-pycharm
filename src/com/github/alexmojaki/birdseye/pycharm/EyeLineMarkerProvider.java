@@ -15,7 +15,6 @@ import com.intellij.util.ConstantFunction;
 import com.intellij.util.Consumer;
 import com.jetbrains.python.debugger.array.JBTableWithRowHeaders;
 import com.jetbrains.python.psi.PyFunction;
-import com.jetbrains.python.psi.impl.PyFunctionImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,7 +30,6 @@ import static com.github.alexmojaki.birdseye.pycharm.Utils.*;
 
 public class EyeLineMarkerProvider implements LineMarkerProvider {
 
-
     @Nullable
     @Override
     public LineMarkerInfo getLineMarkerInfo(@NotNull PsiElement element) {
@@ -44,7 +42,7 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
             if (!(element instanceof PyFunction)) {
                 continue;
             }
-            PyFunctionImpl function = (PyFunctionImpl) element;
+            PyFunction function = (PyFunction) element;
             PsiElement nameIdentifier = function.getNameIdentifier();
             if (nameIdentifier == null) {
                 continue;
@@ -68,15 +66,14 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
                             hasCalls ?
                                     "View calls in birdseye" :
                                     "There are no calls for this function in birdseye"),
-                    (_e, elt) -> createCallsListPanel(elt),
+                    (_e, elt) -> createCallsListPanel((PyFunction) elt.getParent()),
                     GutterIconRenderer.Alignment.RIGHT
             ));
         }
     }
 
-    private void createCallsListPanel(PsiElement nameIdentifier) {
-        PsiElement psiFunction = nameIdentifier.getParent();
-        final Project project = nameIdentifier.getProject();
+    private void createCallsListPanel(PyFunction psiFunction) {
+        final Project project = psiFunction.getProject();
         MyProjectComponent component = MyProjectComponent.getInstance(project);
 
         String hash = hashFunction(psiFunction);
@@ -148,7 +145,7 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
                     content = ContentFactory.SERVICE.getInstance()
                             .createContent(
                                     panel,
-                                    "Call to " + ((PyFunctionImpl) psiFunction).getName(),
+                                    "Call to " + psiFunction.getName(),
                                     false);
                     call.toolWindowContent = content;
                     contentManager.addContent(content);
@@ -174,7 +171,7 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
 
         Content content = ContentFactory.SERVICE.getInstance().createContent(
                 panel,
-                "Calls list for " + ((PyFunctionImpl) psiFunction).getName(),
+                "Calls list for " + psiFunction.getName(),
                 false);
 
         content.setIcon(AllIcons.Nodes.DataTables);

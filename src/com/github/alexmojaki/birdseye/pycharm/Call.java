@@ -18,6 +18,7 @@ import com.intellij.ui.JBColor;
 import com.intellij.ui.content.Content;
 import com.intellij.util.Consumer;
 import com.intellij.util.containers.MultiMap;
+import com.jetbrains.python.psi.PyFunction;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -39,7 +40,7 @@ public class Call {
     BirdseyeFunction birdseyeFunction;
     CallMeta meta;
 
-    static Call get(CallMeta callMeta, PsiElement psiFunction, BirdseyeFunction birdseyeFunction) {
+    static Call get(CallMeta callMeta, PyFunction psiFunction, BirdseyeFunction birdseyeFunction) {
         Call call = new Call();
 
         call.project = psiFunction.getProject();
@@ -63,7 +64,7 @@ public class Call {
     private Call() {
     }
 
-    private void init(PsiElement psiFunction) {
+    private void init(PyFunction psiFunction) {
         for (NodeRange nodeRange : functionData.node_ranges) {
             Node node = new Node(nodeRange);
             nodes.putValue(nodeRange.plainRange(), node);
