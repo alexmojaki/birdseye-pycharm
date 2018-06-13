@@ -22,14 +22,17 @@ import java.util.Collections;
 
 public class HoverValueEditorLinePainter extends EditorLinePainter {
 
-    static Project currentProject;
     static VirtualFile currentFile;
     static int currentLineNumber;
     static String repr;
+    public static String currentProjectHash;
 
     @Override
     public Collection<LineExtensionInfo> getLineExtensions(@NotNull Project project, @NotNull VirtualFile file, int lineNumber) {
-        if (!"".equals(repr) && project.equals(currentProject) && file.equals(currentFile) && lineNumber == currentLineNumber) {
+        if (!"".equals(repr)
+                && project.getLocationHash().equals(currentProjectHash)
+                && file.equals(currentFile)
+                && lineNumber == currentLineNumber) {
             TextAttributes attributes = EditorColorsManager.getInstance().getGlobalScheme().getAttributes(HighlighterColors.TEXT).clone();
             attributes.setFontType(Font.ITALIC);
 //            TextAttributes attributes = new TextAttributes(

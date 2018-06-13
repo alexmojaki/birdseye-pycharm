@@ -74,7 +74,7 @@ public class HoverListener extends EditorMouseMotionAdapter implements EditorMou
         HoverValueEditorLinePainter.moveExtensionToBeginning();
         HoverValueEditorLinePainter.repr = nodeValue.repr();
         HoverValueEditorLinePainter.currentFile = FileDocumentManager.getInstance().getFile(e.getEditor().getDocument());
-        HoverValueEditorLinePainter.currentProject = project;
+        HoverValueEditorLinePainter.currentProjectHash = project.getLocationHash();
         HoverValueEditorLinePainter.currentLineNumber = pos.line;
 
         TextAttributes attributes = EditorColorsManager.getInstance().getGlobalScheme().getAttributes(DiffColors.DIFF_MODIFIED);
