@@ -84,6 +84,7 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
         }
         List<CallMeta> rows = response.calls;
         JComponent centralComponent;
+        Consumer<Integer> openRow = null;
 
         if (rows.isEmpty()) {
             centralComponent = new JBLabel(
@@ -121,7 +122,7 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
             table.setPreferredScrollableViewportSize(new Dimension(500, 70));
             table.setFillsViewportHeight(true);
 
-            Consumer<Integer> openRow = (row) -> {
+            openRow = (row) -> {
                 if (row < 0) {
                     return;
                 }
@@ -152,19 +153,17 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
                     content.setIcon(AllIcons.General.Run);
                 }
 
-                contentManager.setSelectedContent(content);  // TODO move after the calls list is created
+                contentManager.setSelectedContent(content);
             };
 
+            Consumer<Integer> finalOpenRow = openRow;
             table.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    openRow.consume(table.rowAtPoint(e.getPoint()));
+                    finalOpenRow.consume(table.rowAtPoint(e.getPoint()));
                 }
             });
 
-            if (rows.size() == 1) {
-                openRow.consume(0);
-            }
         }
 
         JPanel panel = new PanelWithCloseButton(project, centralComponent);
@@ -177,7 +176,10 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
         content.setIcon(AllIcons.Nodes.DataTables);
         component.setCallsListContent(content);
 
-
+        if (rows.size() == 1) {
+            assert openRow != null;
+            openRow.consume(0);
+        }
     }
 
 }
