@@ -35,12 +35,6 @@ public class HoverValueEditorLinePainter extends EditorLinePainter {
                 && lineNumber == currentLineNumber) {
             TextAttributes attributes = EditorColorsManager.getInstance().getGlobalScheme().getAttributes(HighlighterColors.TEXT).clone();
             attributes.setFontType(Font.ITALIC);
-//            TextAttributes attributes = new TextAttributes(
-//                    Gray._250,
-//                    null,
-//                    null,
-//                    EffectType.ROUNDED_BOX,
-//                    Font.ITALIC);
             return Collections.singletonList(new LineExtensionInfo("    " + repr, attributes));
         }
         return null;

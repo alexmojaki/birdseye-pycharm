@@ -7,7 +7,6 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.IconLoader;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ConstantFunction;
 import com.intellij.util.TripleFunction;
@@ -31,7 +30,7 @@ public class LoopArrowLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        Map<LoopNavigatorKey, Call.LoopNavigator> navigatorMap = new HashMap<>();
+        Map<PsiElement, Call.LoopNavigator> navigatorMap = new HashMap<>();
         Project project = elements.get(0).getProject();
         MyProjectComponent component = MyProjectComponent.getInstance(project);
 
@@ -41,15 +40,14 @@ public class LoopArrowLineMarkerProvider implements LineMarkerProvider {
                 if (element == null) {
                     continue;
                 }
-                navigatorMap.put(LoopNavigatorKey.from(element), navigator);
+                navigatorMap.put(element, navigator);
             }
         }
 
         Set<Call.LoopNavigator> navigators = new HashSet<>();
 
         for (PsiElement element : elements) {
-            LoopNavigatorKey navigatorKey = LoopNavigatorKey.from(element);
-            Call.LoopNavigator navigator = navigatorMap.get(navigatorKey);
+            Call.LoopNavigator navigator = navigatorMap.get(element);
             if (navigator == null || !navigators.add(navigator)) {
                 continue;
             }
@@ -74,47 +72,4 @@ public class LoopArrowLineMarkerProvider implements LineMarkerProvider {
 
     }
 
-    private static class LoopNavigatorKey {
-
-        VirtualFile file;
-        int startOffset;
-        int length;
-
-        LoopNavigatorKey(VirtualFile file, int startOffset, int length) {
-            this.file = file;
-            this.startOffset = startOffset;
-            this.length = length;
-        }
-
-        static LoopNavigatorKey from(PsiElement element) {
-            return new LoopNavigatorKey(
-                    element.getContainingFile().getVirtualFile(),
-                    element.getTextOffset(),
-                    element.getTextLength());
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            LoopNavigatorKey that = (LoopNavigatorKey) o;
-            return startOffset == that.startOffset &&
-                    length == that.length &&
-                    Objects.equals(file, that.file);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(file, startOffset, length);
-        }
-
-        @Override
-        public String toString() {
-            return "LoopNavigatorKey{" +
-                    "startOffset=" + startOffset +
-                    ", length=" + length +
-                    ", file=" + file +
-                    '}';
-        }
-    }
 }
