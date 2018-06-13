@@ -53,12 +53,12 @@ public class LoopArrowLineMarkerProvider implements LineMarkerProvider {
                 continue;
             }
 
-            TripleFunction<Icon, Integer, String, Object> add = (icon, direction, directionLabel) -> {
+            TripleFunction<Icon, Integer, String, Void> add = (icon, direction, directionLabel) -> {
                 String tooltip = String.format(
                         "Step loop of '%s' %s",
                         StringEscapeUtils.escapeHtml(element.getText()),
                         directionLabel);
-                return result.add(new LineMarkerInfo<>(
+                result.add(new LineMarkerInfo<>(
                         element,
                         element.getTextRange(),
                         navigator.canNavigate(direction) ? icon : IconLoader.getDisabledIcon(icon),
@@ -67,6 +67,7 @@ public class LoopArrowLineMarkerProvider implements LineMarkerProvider {
                         (e, elt) -> navigator.navigate(direction),
                         GutterIconRenderer.Alignment.LEFT
                 ));
+                return null;
             };
 
             add.fun(AllIcons.Actions.Back, -1, "backwards");
