@@ -18,7 +18,7 @@ public class MyConfigurable implements Configurable {
     private LabeledField urlPanel;
     private LabeledField dbPanel;
     private LabeledField portPanel;
-    private ButtonGroup group;
+    private ButtonGroup runServerRadioGroup;
     private MyProjectComponent projectComponent;
 
     MyConfigurable(Project project) {
@@ -47,9 +47,9 @@ public class MyConfigurable implements Configurable {
         radio1.setActionCommand("run");
         JRadioButton radio2 = new JRadioButton("Connect to external server at: ");
         radio2.setActionCommand("connect");
-        group = new ButtonGroup();
-        group.add(radio1);
-        group.add(radio2);
+        runServerRadioGroup = new ButtonGroup();
+        runServerRadioGroup.add(radio1);
+        runServerRadioGroup.add(radio2);
 
         panel.add(radio1);
 
@@ -133,7 +133,7 @@ public class MyConfigurable implements Configurable {
     }
 
     private boolean runServer() {
-        return group.getSelection().getActionCommand().equals("run");
+        return runServerRadioGroup.getSelection().getActionCommand().equals("run");
     }
 
     @Override
