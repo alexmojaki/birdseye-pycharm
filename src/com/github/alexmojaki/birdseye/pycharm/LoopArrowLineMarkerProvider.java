@@ -10,6 +10,7 @@ import com.intellij.openapi.util.IconLoader;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ConstantFunction;
 import com.intellij.util.TripleFunction;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -53,7 +54,10 @@ public class LoopArrowLineMarkerProvider implements LineMarkerProvider {
             }
 
             TripleFunction<Icon, Integer, String, Object> add = (icon, direction, directionLabel) -> {
-                String tooltip = String.format("Step loop of '%s' %s", element.getText(), directionLabel);
+                String tooltip = String.format(
+                        "Step loop of '%s' %s",
+                        StringEscapeUtils.escapeHtml(element.getText()),
+                        directionLabel);
                 return result.add(new LineMarkerInfo<>(
                         element,
                         element.getTextRange(),
