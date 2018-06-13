@@ -67,30 +67,15 @@ public class MyConfigurable implements Configurable {
                 40,
                 panel);
 
-        ProcessMonitor processMonitor;
-        if (!state().runServer) {
-            processMonitor = projectComponent.processMonitor;
-        } else {
-            processMonitor = projectComponent.responsibleProcessMonitor();
-        }
-
         JLabel statusLabel = new JBLabel();
         JLabel errorLabel = new JBLabel();
-        JButton restartButton = new JButton("Restart server", AllIcons.Actions.Restart);
         panel.add(statusLabel);
         panel.add(errorLabel);
-        restartButton.addActionListener(e -> {
-            statusLabel.setIcon(AllIcons.Actions.Execute);
-            statusLabel.setText("...");
-            errorLabel.setText("");
-            processMonitor.stop();
-            processMonitor.start();
-            Timer timer = new Timer(1000, ev -> statusLabel.setText("The server has been restarted"));
-            timer.setRepeats(false);
-            timer.start();
-        });
+        JButton restartButton = null;
 
         if (state().runServer) {
+            ProcessMonitor processMonitor = projectComponent.responsibleProcessMonitor();
+
             boolean running = processMonitor.isRunning();
             statusLabel.setText(running ?
                     "The server is currently running" :
@@ -99,6 +84,19 @@ public class MyConfigurable implements Configurable {
                     AllIcons.Actions.Execute :
                     AllIcons.Actions.Suspend);
             errorLabel.setText(processMonitor.errorMessage);
+
+            restartButton = new JButton("Restart server", AllIcons.Actions.Restart);
+            restartButton.addActionListener(e -> {
+                statusLabel.setIcon(AllIcons.Actions.Execute);
+                statusLabel.setText("...");
+                errorLabel.setText("");
+                processMonitor.stop();
+                processMonitor.start();
+                Timer timer = new Timer(1000, ev -> statusLabel.setText("The server has been restarted"));
+                timer.setRepeats(false);
+                timer.start();
+            });
+
             panel.add(restartButton);
         }
 
@@ -111,14 +109,17 @@ public class MyConfigurable implements Configurable {
                 40,
                 panel);
 
+        JButton finalRestartButton = restartButton;
+
         ActionListener actionListener = e -> {
             boolean run = runServer();
-
             portPanel.setEnabled(run);
             dbPanel.setEnabled(run);
             statusLabel.setEnabled(run);
             errorLabel.setEnabled(run);
-            restartButton.setEnabled(run);
+            if (finalRestartButton != null) {
+                finalRestartButton.setEnabled(run);
+            }
 
             urlPanel.setEnabled(!run);
         };
