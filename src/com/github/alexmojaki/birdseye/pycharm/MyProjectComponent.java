@@ -84,7 +84,7 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
 
     protected MyProjectComponent(Project project) {
         super(project);
-        apiClient = new ApiClient(project);
+        apiClient = new ApiClient(this);
         processMonitor = new ProcessMonitor(this);
     }
 
@@ -323,7 +323,7 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
                 .processMonitor;
     }
 
-    void offerInstall(String title, String message, String requirement, Runnable onInstalled) {
+    void offerInstall(String title, String message, @Nullable Runnable onInstalled) {
         Sdk projectSdk = ProjectRootManager.getInstance(myProject).getProjectSdk();
         assert projectSdk != null;
         Function<Runnable, PyPackageManagerUI> ui = (runnable) -> new PyPackageManagerUI(myProject, projectSdk, new PyPackageManagerUI.Listener() {
@@ -333,7 +333,7 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
 
             @Override
             public void finished(List<ExecutionException> exceptions) {
-                if (exceptions.isEmpty()) {
+                if (exceptions.isEmpty() && runnable != null) {
                     runnable.run();
                 }
             }
@@ -341,7 +341,9 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
         final PyPackageManager packageManager = PyPackageManager.getInstance(projectSdk);
         Runnable install = () -> ui
                 .apply(onInstalled)
-                .install(packageManager.parseRequirements(requirement), Collections.emptyList());
+                .install(packageManager.parseRequirements(
+                        "birdseye"),
+                        Arrays.asList("--upgrade", "--upgrade-strategy", "only-if-needed"));
 
         NotificationListener.Adapter listener = new NotificationListener.Adapter() {
             @Override

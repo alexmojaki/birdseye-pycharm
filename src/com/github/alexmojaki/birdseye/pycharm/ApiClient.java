@@ -1,6 +1,5 @@
 package com.github.alexmojaki.birdseye.pycharm;
 
-import com.intellij.openapi.project.Project;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
@@ -14,20 +13,23 @@ import java.util.List;
 import static com.github.alexmojaki.birdseye.pycharm.Utils.*;
 
 class ApiClient {
-    private final Project project;
+    private final MyProjectComponent projectComponent;
     private boolean inError = false;
 
-    ApiClient(Project project) {
-        this.project = project;
+    ApiClient(MyProjectComponent projectComponent) {
+        this.projectComponent = projectComponent;
     }
 
     private String url(String path) {
-        State state = MyProjectComponent.getInstance(project).state;
-        String base = state.runServer ? ("http://localhost:" + state.port) : state.serverUrl;
+        String base = state().runServer ? ("http://localhost:" + state().port) : state().serverUrl;
         while (base.endsWith("/")) {
             base = base.substring(0, base.length() - 1);
         }
         return base + "/api/" + path;
+    }
+
+    private State state() {
+        return projectComponent.state;
     }
 
     private <T> T request(Request request, Class<T> responseClass) {
@@ -37,7 +39,10 @@ class ApiClient {
 
             if (statusCode != 200) {
                 String message = "Request returned response with code " + statusCode + ".";
-                if (statusCode == 404) {
+                if (statusCode == 404
+                        // If we're running the server, the process monitor should be able
+                        // to offer an upgrade.
+                        && !state().runServer) {
                     message += " You probably need to upgrade birdseye:<br>" +
                             htmlList("ol", Arrays.asList(
                                     "<code>pip install --upgrade birdseye</code>",
@@ -63,16 +68,15 @@ class ApiClient {
             return;
         }
 
-        MyProjectComponent component = MyProjectComponent.getInstance(project);
-        if (component.state.runServer) {
-            ProcessMonitor monitor = component.responsibleProcessMonitor();
+        if (state().runServer) {
+            ProcessMonitor monitor = projectComponent.responsibleProcessMonitor();
             if (!(monitor.isRunning() && monitor.runningTime() > 3000)) {
                 return;
             }
         }
 
         String title = "Error communicating with birdseye server";
-        component.notifyError(title, message);
+        projectComponent.notifyError(title, message);
         inError = true;
     }
 

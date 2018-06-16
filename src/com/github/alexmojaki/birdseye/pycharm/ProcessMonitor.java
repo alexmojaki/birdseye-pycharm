@@ -61,7 +61,7 @@ class ProcessMonitor {
 
         final PyPackageManager packageManager = PyPackageManager.getInstance(projectSdk);
         PyRequirement pyRequirement = packageManager
-                .parseRequirements("birdseye")
+                .parseRequirements("birdseye>=0.4.2")
                 .get(0);
         List<PyPackage> packages;
         try {
@@ -79,7 +79,6 @@ class ProcessMonitor {
             projectComponent.offerInstall(
                     errorMessage,
                     "Click <a href='#'>here</a> to install/upgrade birdseye.",
-                    "birdseye",
                     this::start);
             return;
         }
@@ -123,9 +122,7 @@ class ProcessMonitor {
                         projectComponent.offerInstall(
                                 matcher.group(1),
                                 matcher.group(2) + ". Click <a href='#'>here</a> to upgrade.",
-                                "birdseye==" + matcher.group(3),
-                                () -> {
-                                }
+                                null
                         );
                     }
                 }
