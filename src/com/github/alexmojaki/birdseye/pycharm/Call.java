@@ -441,5 +441,26 @@ public class Call {
         }
     }
 
+    void clear() {
+        callData.loop_iterations.clear();
+        callData.node_values.clear();
+        callData = null;
+        panel.clear();
+        panel = null;
+        functionData.loop_nodes = null;
+        functionData.node_loops.clear();
+        functionData.node_ranges = null;
+        functionData = null;
+        birdseyeFunction.rangeMarkers.clear();
+        birdseyeFunction.loopRangeMarkers.clear();
+        birdseyeFunction = null;
+        nodes.clear();
+        navigators.clear();
+        project = null;
+        tempHighlighters.clear();
+        toolWindowContent = null;
+        meta = null;
+    }
+
 
 }

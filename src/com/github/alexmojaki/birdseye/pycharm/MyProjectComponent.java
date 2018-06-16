@@ -288,7 +288,6 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
     public void projectOpened() {
         MyApplicationComponent.getInstance().updateServers();
 
-        // TODO wait for server to start
         scheduleHashCheck();
 
         EditorFactory.getInstance().getEventMulticaster().addDocumentListener(new DocumentListener() {
@@ -312,6 +311,8 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
     public void projectClosed() {
         processMonitor.stop();
         MyApplicationComponent.getInstance().updateServers();
+        calls.forEach(Call::clear);
+        calls.clear();
     }
 
     ProcessMonitor responsibleProcessMonitor() {
