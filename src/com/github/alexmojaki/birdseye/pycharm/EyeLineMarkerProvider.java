@@ -142,7 +142,7 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
                     if (call == null) {
                         return;
                     }
-                    JPanel panel = new PanelWithCloseButton(project, call.panel);
+                    JPanel panel = new PanelWithSideButtons(project, call.panel);
                     content = ContentFactory.SERVICE.getInstance()
                             .createContent(
                                     panel,
@@ -166,7 +166,7 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
 
         }
 
-        JPanel panel = new PanelWithCloseButton(project, centralComponent);
+        JPanel panel = new PanelWithSideButtons(project, centralComponent);
 
         Content content = ContentFactory.SERVICE.getInstance().createContent(
                 panel,

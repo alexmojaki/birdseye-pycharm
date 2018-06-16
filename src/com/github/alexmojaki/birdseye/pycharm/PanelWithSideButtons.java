@@ -31,11 +31,11 @@ import javax.swing.*;
 import java.awt.*;
 
 
-class PanelWithCloseButton extends JPanel implements Disposable {
+class PanelWithSideButtons extends JPanel implements Disposable {
     private final ContentManager contentManager;
     private final Project project;
 
-    PanelWithCloseButton(Project project, JComponent centerComponent) {
+    PanelWithSideButtons(Project project, JComponent centerComponent) {
         super(new BorderLayout());
         this.project = project;
 
@@ -43,8 +43,8 @@ class PanelWithCloseButton extends JPanel implements Disposable {
 
         contentManager.addContentManagerListener(new ContentManagerAdapter() {
             public void contentRemoved(ContentManagerEvent event) {
-                if (event.getContent().getComponent() == PanelWithCloseButton.this) {
-                    Disposer.dispose(PanelWithCloseButton.this);
+                if (event.getContent().getComponent() == PanelWithSideButtons.this) {
+                    Disposer.dispose(PanelWithSideButtons.this);
                     contentManager.removeContentManagerListener(this);
                 }
             }
@@ -73,7 +73,7 @@ class PanelWithCloseButton extends JPanel implements Disposable {
     private class CloseAction extends CloseTabToolbarAction {
 
         public void actionPerformed(AnActionEvent e) {
-            Content content = contentManager.getContent(PanelWithCloseButton.this);
+            Content content = contentManager.getContent(PanelWithSideButtons.this);
             if (content != null) {
                 ContentsUtil.closeContentTab(contentManager, content);
                 contentManager.removeContent(content, true);
