@@ -15,10 +15,7 @@ import com.jetbrains.python.psi.PyFunction;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -120,6 +117,11 @@ public class Utils {
 
     static <T> List<T> filterToList(T[] array, Predicate<T> predicate) {
         return Arrays.stream(array).filter(predicate).collect(Collectors.toList());
+    }
+
+    static <T, P> List<T> uniqueBy(List<T> list, Function<T, P> function) {
+        Set<P> keys = new HashSet<>();
+        return filterToList(list, x -> keys.add(function.apply(x)));
     }
 
 }

@@ -16,7 +16,7 @@ public class BirdseyeFunction {
     static final Key<Range> ORIGINAL_RANGE = Key.create("ORIGINAL_RANGE");
     Map<Range, RangeMarker> rangeMarkers = new HashMap<>();
     Map<Range, RangeMarker> loopRangeMarkers = new HashMap<>();
-    private RangeMarker fullRangeMarker;
+    RangeMarker startRangeMarker;
     String originalText;
     DocumentEx document;
 
@@ -36,9 +36,10 @@ public class BirdseyeFunction {
             loopRangeMarkers.put(range, rangeMarker);
         }
 
-        fullRangeMarker = document.createRangeMarker(
+        startRangeMarker = document.createRangeMarker(
                 startOffset,
-                psiFunction.getTextRange().getEndOffset());
+                startOffset,
+                true);
 
         originalText = getFunctionText(psiFunction);
     }
@@ -48,10 +49,6 @@ public class BirdseyeFunction {
                 range.start + startOffset,
                 range.end + startOffset,
                 true);
-    }
-
-    Range fullRange() {
-        return new Range(fullRangeMarker);
     }
 
 }

@@ -247,22 +247,10 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
     }
 
     List<Call> activeCalls() {
-        List<Call> result = new ArrayList<>();
-        Set<Range> ranges = new HashSet<>();
-
-        for (Call call : calls()) {
-            if (ranges.add(call.birdseyeFunction.fullRange())) {
-                result.add(call);
-            }
-        }
-        return result;
-    }
-
-    List<Call> calls() {
         if (!isActive) {
             return Collections.emptyList();
         }
-        return calls;
+        return uniqueBy(calls, call -> call.birdseyeFunction.startRangeMarker.getStartOffset());
     }
 
     void setCallsListContent(Content content) {

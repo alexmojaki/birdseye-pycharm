@@ -24,8 +24,6 @@ import java.util.stream.Collectors;
 
 public class MyEditorFactoryListener implements EditorFactoryListener {
 
-//    static MultiMap<Document, Editor> documentToEditors = new MultiMap<>();
-
     @Override
     public void editorCreated(@NotNull EditorFactoryEvent event) {
         Editor editor = event.getEditor();
@@ -37,8 +35,6 @@ public class MyEditorFactoryListener implements EditorFactoryListener {
 
         Document document = editor.getDocument();
         VirtualFile file = FileDocumentManager.getInstance().getFile(document);
-
-//        documentToEditors.putValue(document, editor);
 
         editor.getGutter().registerTextAnnotation(new TextAnnotationGutterProvider() {
             @Override
@@ -114,8 +110,5 @@ public class MyEditorFactoryListener implements EditorFactoryListener {
 
     @Override
     public void editorReleased(@NotNull EditorFactoryEvent event) {
-//        Editor editor = event.getEditor();
-//        Document document = editor.getDocument();
-//        documentToEditors.remove(document, editor);
     }
 }
