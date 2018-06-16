@@ -41,6 +41,7 @@ import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import java.util.*;
 import java.util.Timer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.github.alexmojaki.birdseye.pycharm.Utils.*;
@@ -323,43 +324,32 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
     }
 
     void offerInstall(String title, String message, String requirement, Runnable onInstalled) {
+        Sdk projectSdk = ProjectRootManager.getInstance(myProject).getProjectSdk();
+        assert projectSdk != null;
+        Function<Runnable, PyPackageManagerUI> ui = (runnable) -> new PyPackageManagerUI(myProject, projectSdk, new PyPackageManagerUI.Listener() {
+            @Override
+            public void started() {
+            }
+
+            @Override
+            public void finished(List<ExecutionException> exceptions) {
+                if (exceptions.isEmpty()) {
+                    runnable.run();
+                }
+            }
+        });
+        final PyPackageManager packageManager = PyPackageManager.getInstance(projectSdk);
+        Runnable install = () -> ui
+                .apply(onInstalled)
+                .install(packageManager.parseRequirements(requirement), Collections.emptyList());
+
         NotificationListener.Adapter listener = new NotificationListener.Adapter() {
             @Override
             protected void hyperlinkActivated(@NotNull Notification notification, @NotNull HyperlinkEvent e) {
-                Sdk projectSdk = ProjectRootManager.getInstance(myProject).getProjectSdk();
-                assert projectSdk != null;
-                final PyPackageManager packageManager = PyPackageManager.getInstance(projectSdk);
-                Runnable install = () -> {
-                    PyPackageManagerUI ui = new PyPackageManagerUI(myProject, projectSdk, new PyPackageManagerUI.Listener() {
-                        @Override
-                        public void started() {
-                        }
-
-                        @Override
-                        public void finished(List<ExecutionException> exceptions) {
-                            if (exceptions.isEmpty()) {
-                                onInstalled.run();
-                            }
-                        }
-                    });
-                    ui.install(packageManager.parseRequirements(requirement), Collections.emptyList());
-                };
                 List<PyPackage> packages = packageManager.getPackages();
                 assert packages != null;
                 if (!PyPackageUtil.hasManagement(packages)) {
-                    PyPackageManagerUI ui = new PyPackageManagerUI(myProject, projectSdk, new PyPackageManagerUI.Listener() {
-                        @Override
-                        public void started() {
-                        }
-
-                        @Override
-                        public void finished(List<ExecutionException> exceptions) {
-                            if (exceptions.isEmpty()) {
-                                install.run();
-                            }
-                        }
-                    });
-                    ui.installManagement();
+                    ui.apply(install).installManagement();
                 } else {
                     install.run();
                 }
