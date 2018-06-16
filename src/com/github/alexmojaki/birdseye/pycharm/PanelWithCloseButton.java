@@ -41,16 +41,14 @@ class PanelWithCloseButton extends JPanel implements Disposable {
 
         contentManager = MyProjectComponent.getInstance(project).contentManager();
 
-        if (contentManager != null) {
-            contentManager.addContentManagerListener(new ContentManagerAdapter() {
-                public void contentRemoved(ContentManagerEvent event) {
-                    if (event.getContent().getComponent() == PanelWithCloseButton.this) {
-                        Disposer.dispose(PanelWithCloseButton.this);
-                        contentManager.removeContentManagerListener(this);
-                    }
+        contentManager.addContentManagerListener(new ContentManagerAdapter() {
+            public void contentRemoved(ContentManagerEvent event) {
+                if (event.getContent().getComponent() == PanelWithCloseButton.this) {
+                    Disposer.dispose(PanelWithCloseButton.this);
+                    contentManager.removeContentManagerListener(this);
                 }
-            });
-        }
+            }
+        });
 
         DefaultActionGroup myToolbarGroup = new DefaultActionGroup(null, false);
         myToolbarGroup.add(new MyCloseAction());
