@@ -50,37 +50,33 @@ class PanelWithCloseButton extends JPanel implements Disposable {
             }
         });
 
-        DefaultActionGroup myToolbarGroup = new DefaultActionGroup(null, false);
-        myToolbarGroup.add(new MyCloseAction());
+        DefaultActionGroup toolbarGroup = new DefaultActionGroup(null, false);
 
-        ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar(ActionPlaces.FILEHISTORY_VIEW_TOOLBAR, myToolbarGroup, false);
+        ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar(
+                ActionPlaces.FILEHISTORY_VIEW_TOOLBAR,
+                toolbarGroup,
+                false);
+
         JComponent component = new JBScrollPane(centerComponent);
         toolbar.setTargetComponent(component);
-        for (AnAction action : myToolbarGroup.getChildren(null)) {
-            action.registerCustomShortcutSet(action.getShortcutSet(), component);
-        }
 
-        myToolbarGroup.add(new OpenSettingsAction());
-        myToolbarGroup.add(new OpenHelpAction());
+        CloseAction closeAction = new CloseAction();
+        closeAction.registerCustomShortcutSet(closeAction.getShortcutSet(), component);
+        toolbarGroup.add(closeAction);
+        toolbarGroup.add(new OpenSettingsAction());
+        toolbarGroup.add(new OpenHelpAction());
 
         add(component, BorderLayout.CENTER);
         add(toolbar.getComponent(), BorderLayout.WEST);
     }
 
-    private class MyCloseAction extends CloseTabToolbarAction {
+    private class CloseAction extends CloseTabToolbarAction {
 
         public void actionPerformed(AnActionEvent e) {
             Content content = contentManager.getContent(PanelWithCloseButton.this);
             if (content != null) {
                 ContentsUtil.closeContentTab(contentManager, content);
-                if (content instanceof TabbedContent && ((TabbedContent) content).hasMultipleTabs()) {
-                    final TabbedContent tabbedContent = (TabbedContent) content;
-                    final JComponent component = content.getComponent();
-                    tabbedContent.removeContent(component);
-                    contentManager.setSelectedContent(content, true, true);
-                } else {
-                    contentManager.removeContent(content, true);
-                }
+                contentManager.removeContent(content, true);
             }
         }
     }
