@@ -106,9 +106,4 @@ public class Utils {
         return Arrays.stream(array).filter(predicate).collect(Collectors.toList());
     }
 
-    static <T, P> List<T> uniqueBy(List<T> list, Function<T, P> function) {
-        Set<P> keys = new HashSet<>();
-        return filterToList(list, x -> keys.add(function.apply(x)));
-    }
-
 }

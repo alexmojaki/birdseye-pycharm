@@ -95,6 +95,11 @@ public class Call {
         for (LoopNodeRange loopNode : functionData.loop_nodes) {
             // Find a PsiElement with the correct text range
             RangeMarker rangeMarker = birdseyeFunction.loopRangeMarkers.get(loopNode.plainRange());
+
+            if (!rangeMarker.isValid()) {
+                continue;
+            }
+
             final PsiElement[] loopElement = {null};
             PsiRecursiveElementWalkingVisitor visitor = new PsiRecursiveElementWalkingVisitor() {
                 @Override
@@ -357,8 +362,18 @@ public class Call {
             return birdseyeFunction.rangeMarkers.get(range.plainRange());
         }
 
+        /**
+         * Returns true if the text in this node's range in the document has
+         * been edited, so that the text in the editor may not reflect what this node
+         * actually represents, thus potentially confusing the user.
+         */
         boolean isRangeInvalid() {
             RangeMarker rangeMarker = rangeMarker();
+
+            if (!rangeMarker.isValid()) {
+                return false;
+            }
+
             TextRange textRange = new TextRange(
                     rangeMarker.getStartOffset(),
                     rangeMarker.getEndOffset());

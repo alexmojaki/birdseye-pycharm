@@ -11,6 +11,7 @@ import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
+import com.intellij.openapi.editor.RangeMarker;
 import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.project.DumbService;
@@ -251,7 +252,16 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
         if (!isActive) {
             return Collections.emptyList();
         }
-        return uniqueBy(calls, call -> call.birdseyeFunction.startRangeMarker.getStartOffset());
+        Set<Integer> starts = new HashSet<>();
+        List<Call> result = new ArrayList<>();
+        for (Call call : calls) {
+            RangeMarker rangeMarker = call.birdseyeFunction.startRangeMarker;
+            if (rangeMarker.isValid() &&
+                    starts.add(rangeMarker.getStartOffset())) {
+                result.add(call);
+            }
+        }
+        return result;
     }
 
     void setCallsListContent(Content content) {

@@ -36,6 +36,12 @@ public class HideableRangeHighlighter {
     }
 
     void addFor(Editor editor) {
+        RangeMarker rm = node.rangeMarker();
+
+        if (!rm.isValid()) {
+            return;
+        }
+
         Call call = node.call();
         Project project = call.project;
 
@@ -45,7 +51,6 @@ public class HideableRangeHighlighter {
         }
 
         DumbService.getInstance(project).smartInvokeLater(() -> {
-            RangeMarker rm = node.rangeMarker();
             RangeHighlighter highlighter = editor.getMarkupModel().addRangeHighlighter(
                     rm.getStartOffset(),
                     rm.getEndOffset(),
