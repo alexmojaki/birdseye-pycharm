@@ -16,13 +16,13 @@ import com.intellij.psi.SmartPointerManager;
 import com.intellij.psi.SmartPsiElementPointer;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.content.Content;
-import com.intellij.util.Consumer;
 import com.intellij.util.containers.MultiMap;
 import com.jetbrains.python.psi.PyFunction;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import static com.github.alexmojaki.birdseye.pycharm.Utils.*;
@@ -33,13 +33,27 @@ public class Call {
     CallPanel panel;
     private FunctionData functionData;
     private MultiMap<Range, Node> nodes = new MultiMap<>();
+
+    // A key here is a _tree_index from birdseye
     Map<Integer, LoopNavigator> navigators = new TreeMap<>();
+
     Project project;
+
+    // These are highlighters that disappear (possibly to be replaced by identical versions)
+    // when the user navigates through a loop.
+    // They include red boxes for exceptions and gray text for uncovered code.
+    // They are temporary only in contrast to the highlighter for a selected node
+    // which survives loop navigations.
     private List<HideableRangeHighlighter> tempHighlighters = new ArrayList<>();
+
     Content toolWindowContent;
     BirdseyeFunction birdseyeFunction;
     CallMeta meta;
 
+    /**
+     * Gets all the data about a call from the server. If there's an error, returns null.
+     * Otherwise, returns an initialised Call.
+     */
     static Call get(CallMeta callMeta, PyFunction psiFunction, BirdseyeFunction birdseyeFunction) {
         Call call = new Call();
 
@@ -70,9 +84,16 @@ public class Call {
             nodes.putValue(nodeRange.plainRange(), node);
         }
 
+        // For the Nodes, it's enough to identify them by just a Range (above)
+        // For loop nodes, we need to be able to create line markers
+        // (see LoopArrowLineMarkerProvider) which requires a PsiElement.
+        // We use either the target of a for loop, e.g. `for *i* in ...:`,
+        // or the condition in a while loop, e.g. `while *condition*:`.
+
         SmartPointerManager smartPointerManager = SmartPointerManager.getInstance(project);
 
         for (NodeRange loopNode : functionData.loop_nodes) {
+            // Find a PsiElement with the correct text range
             RangeMarker rangeMarker = birdseyeFunction.loopRangeMarkers.get(loopNode.plainRange());
             final PsiElement[] loopElement = {null};
             PsiRecursiveElementWalkingVisitor visitor = new PsiRecursiveElementWalkingVisitor() {
@@ -106,17 +127,12 @@ public class Call {
 
     private static final int[] EMPTY_INTS = {};
 
+    /**
+     * Perform action on every highlighter this call manages.
+     */
     void processHighlighters(Consumer<HideableRangeHighlighter> action) {
-        for (HideableRangeHighlighter highlighter : tempHighlighters) {
-            action.consume(highlighter);
-        }
-        for (Node node : nodes.values()) {
-            HideableRangeHighlighter highlighter = panel.selectedNodes.get(node);
-            if (highlighter != null) {
-                action.consume(highlighter);
-            }
-        }
-
+        tempHighlighters.forEach(action);
+        panel.selectedNodes.values().forEach(action);
     }
 
     public void hideHighlighters() {
