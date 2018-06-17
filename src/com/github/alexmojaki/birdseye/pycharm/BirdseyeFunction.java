@@ -11,12 +11,30 @@ import java.util.Map;
 
 import static com.github.alexmojaki.birdseye.pycharm.Utils.*;
 
+/**
+ * This class is created when the user clicks on an eye icon on the left gutter,
+ * showing a table of calls to the corresponding function. It manages data
+ * common to those calls, and uses range markers to handle changes to the document made by the user between
+ * retrieving that list of calls and retrieving a specific call.
+ *
+ * The name of the class instead of just 'Function' is to distinguish from the functional interface
+ * provided by Java and libraries.
+ */
 public class BirdseyeFunction {
 
     static final Key<Range> ORIGINAL_RANGE = Key.create("ORIGINAL_RANGE");
+
+    // Each Range in these maps corresponds to one or more nodes in the Python AST
+    // that we need to keep track of in the document. The Range comes from the
+    // Python side and is relative to the start of the function.
     Map<Range, RangeMarker> rangeMarkers = new HashMap<>();
     Map<Range, RangeMarker> loopRangeMarkers = new HashMap<>();
+
+    // This keeps track of the start of the function. It allows identifying
+    // different versions of the same function as it changes over time but
+    // occupies the same space in the document.
     RangeMarker startRangeMarker;
+
     String originalText;
     DocumentEx document;
 

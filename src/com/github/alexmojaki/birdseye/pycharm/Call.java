@@ -305,9 +305,10 @@ public class Call {
         }
 
         boolean isRangeInvalid() {
+            RangeMarker rangeMarker = rangeMarker();
             TextRange textRange = new TextRange(
-                    rangeMarker().getStartOffset(),
-                    rangeMarker().getEndOffset());
+                    rangeMarker.getStartOffset(),
+                    rangeMarker.getEndOffset());
             String originalText = text();
             String currentText = document().getText(textRange);
             boolean result = originalText.equals(currentText);
@@ -453,6 +454,7 @@ public class Call {
         functionData = null;
         birdseyeFunction.rangeMarkers.clear();
         birdseyeFunction.loopRangeMarkers.clear();
+        birdseyeFunction.document = null;
         birdseyeFunction = null;
         nodes.clear();
         navigators.clear();
