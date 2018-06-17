@@ -114,7 +114,7 @@ public class Call {
 
             LoopNavigator navigator = new LoopNavigator();
             navigator.pointer = smartPointerManager.createSmartPsiElementPointer(loopElement[0]);
-            navigator.treeIndex = loopNode.node;
+            navigator.treeIndex = loopNode.tree_index;
             navigators.put(navigator.treeIndex, navigator);
         }
 
@@ -283,7 +283,7 @@ public class Call {
 
     static class NodeRange {
         int depth;
-        int node;  // _tree_index
+        int tree_index;
         int start;
         int end;
         List<String> classes;
@@ -337,7 +337,7 @@ public class Call {
         }
 
         int treeIndex() {
-            return range.node;
+            return range.tree_index;
         }
 
         String text() {
