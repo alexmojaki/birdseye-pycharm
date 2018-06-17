@@ -92,7 +92,7 @@ public class Call {
 
         SmartPointerManager smartPointerManager = SmartPointerManager.getInstance(project);
 
-        for (NodeRange loopNode : functionData.loop_nodes) {
+        for (LoopNodeRange loopNode : functionData.loop_nodes) {
             // Find a PsiElement with the correct text range
             RangeMarker rangeMarker = birdseyeFunction.loopRangeMarkers.get(loopNode.plainRange());
             final PsiElement[] loopElement = {null};
@@ -277,20 +277,26 @@ public class Call {
      */
     static class FunctionData {
         NodeRange[] node_ranges;
-        NodeRange[] loop_nodes;
+        LoopNodeRange[] loop_nodes;
         Map<Integer, int[]> node_loops;
     }
 
-    static class NodeRange {
-        int depth;
+    private abstract static class AbstractNodeRange {
         int tree_index;
         int start;
         int end;
-        List<String> classes;
 
         Range plainRange() {
             return new Range(start, end);
         }
+    }
+
+    static class NodeRange extends AbstractNodeRange {
+        int depth;
+        List<String> classes;
+    }
+
+    static class LoopNodeRange extends AbstractNodeRange {
     }
 
     /**
@@ -327,6 +333,9 @@ public class Call {
                 .orElse(null);
     }
 
+    /**
+     * This corresponds to a node in the Python AST that may have a value to inspect.
+     */
     public class Node {
 
         final NodeRange range;
