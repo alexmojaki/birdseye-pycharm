@@ -100,21 +100,6 @@ public class CallPanel extends JBPanel {
         });
     }
 
-    void clear() {
-        for (Call.Node node : selectedNodes.keySet()) {
-            InspectorTreeNode treeNode = node.inspectorTreeNode;
-
-            // We don't expect this to happen, but at this point
-            // we're being cautious
-            if (treeNode == null) {
-                continue;
-            }
-
-            treeNode.removeFromParent();
-        }
-        selectedNodes.clear();
-    }
-
     void toggleSelectedNode(Call.Node node) {
         DefaultMutableTreeNode root = root();
         DefaultMutableTreeNode treeNode = node.inspectorTreeNode();

@@ -312,7 +312,7 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
     public void projectClosed() {
         processMonitor.stop();
         MyApplicationComponent.getInstance().updateServers();
-        calls.forEach(Call::clear);
+        calls.forEach(Call::clearMemoryJustInCase);
         calls.clear();
     }
 

@@ -496,11 +496,22 @@ public class Call {
         }
     }
 
-    void clear() {
+    void clearMemoryJustInCase() {
         callData.loop_iterations.clear();
         callData.node_values.clear();
         callData = null;
-        panel.clear();
+        for (Node node : panel.selectedNodes.keySet()) {
+            InspectorTreeNode treeNode = node.inspectorTreeNode;
+
+            // We don't expect this to happen, but at this point
+            // we're being cautious
+            if (treeNode == null) {
+                continue;
+            }
+
+            treeNode.removeFromParent();
+        }
+        panel.selectedNodes.clear();
         panel = null;
         functionData.loop_nodes = null;
         functionData.node_loops.clear();
