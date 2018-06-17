@@ -1,7 +1,5 @@
 package com.github.alexmojaki.birdseye.pycharm;
 
-import com.intellij.openapi.editor.RangeMarker;
-
 import java.util.Objects;
 
 public class Range {
@@ -11,10 +9,6 @@ public class Range {
     Range(int start, int end) {
         this.start = start;
         this.end = end;
-    }
-
-    Range(RangeMarker rangeMarker) {
-        this(rangeMarker.getStartOffset(), rangeMarker.getEndOffset());
     }
 
     @Override

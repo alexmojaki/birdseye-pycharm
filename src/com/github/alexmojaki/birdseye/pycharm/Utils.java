@@ -19,7 +19,6 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Utils {
 
@@ -28,14 +27,15 @@ public class Utils {
     private Utils() {
     }
 
-    public static String truncate(String s, int maxLength) {
+    @SuppressWarnings("SameParameterValue")
+    static String truncate(String s, int maxLength) {
         if (s.length() <= maxLength + 5) {
             return s;
         }
         return s.substring(0, maxLength - 3) + "...";
     }
 
-    public static String collapseWhitespace(String s) {
+    static String collapseWhitespace(String s) {
         return s.replaceAll("\\s{2,}", " ");
     }
 
@@ -63,20 +63,6 @@ public class Utils {
         EditorTracker editorTracker = project.getComponent(EditorTracker.class);
         List<Editor> activeEditors = editorTracker.getActiveEditors();
         return new ArrayList<>(activeEditors);
-    }
-
-    private static <T> Stream<T> dropWhile(Stream<T> s, Predicate<T> p) {
-        final boolean[] inTail = {false};
-        return s.filter(i -> {
-            if (inTail[0]) {
-                return true;
-            }
-            if (!p.test(i)) {
-                inTail[0] = true;
-                return true;
-            }
-            return false;
-        });
     }
 
     @NotNull
@@ -115,6 +101,7 @@ public class Utils {
         return collection.stream().filter(predicate).collect(Collectors.toList());
     }
 
+    @SuppressWarnings("unused")
     static <T> List<T> filterToList(T[] array, Predicate<T> predicate) {
         return Arrays.stream(array).filter(predicate).collect(Collectors.toList());
     }
