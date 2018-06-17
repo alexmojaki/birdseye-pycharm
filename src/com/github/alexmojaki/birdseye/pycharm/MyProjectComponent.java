@@ -176,6 +176,7 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
                     calls.remove(call);
                     if (call != null) {
                         call.hideHighlighters();
+                        call.clearMemoryJustInCase();
                     }
                     if (contentManager().getContentCount() == 0) {
                         getToolWindow().hide(null);

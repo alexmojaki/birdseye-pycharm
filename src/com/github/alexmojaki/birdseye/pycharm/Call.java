@@ -153,6 +153,9 @@ public class Call {
      * It has data stored as JSON about a Node for a particular iteration in
      * a call. The data is interpreted, particularly to be displayed
      * in a tree in the inspector panel.
+     *
+     * This corresponds somewhat to the make_jstree_nodes function in call.js in plain birdseye,
+     * but better organised.
      */
     public class NodeValue {
 
@@ -404,10 +407,19 @@ public class Call {
             return new HideableRangeHighlighter(this, attributes);
         }
 
+        /**
+         * Return the value of the node at the 'current time' in the program
+         * based on the current loop iterations.
+         *
+         * Returns null if there is no value at this time because the code didn't execute,
+         * e.g. because of an if statement.
+         *
+         * This corresponds to the `get_value` function in call.js in plain birdseye.
+         */
         NodeValue value() {
             JsonElement element = callData.node_values.get(treeIndex());
             for (int loopIndex : functionData.node_loops.getOrDefault(treeIndex(), EMPTY_INTS)) {
-                LoopNavigator navigator = navigator(loopIndex);
+                LoopNavigator navigator = navigators.get(loopIndex);
                 if (element == null || navigator == null) {
                     return null;
                 }
@@ -437,15 +449,30 @@ public class Call {
         }
     }
 
-    private LoopNavigator navigator(int loopIndex) {
-        return navigators.get(loopIndex);
-    }
-
+    /**
+     * This class manages the state of a loop, both so that nodes can know
+     * their current value and to display the arrows and iteration number on the side.
+     *
+     * Suppose there is a loop in the code that iterates 100 times. birdseye will keep the first
+     * and last few iterations of this loop.
+     *
+     * - `indices` will be [0, 1, 2, 97, 98, 99]
+     * - currentIterationDisplay() will return one of the above values.
+     * - iterationIndex and currentIteration() will be an index of `indices`, i.e. one of the values
+     *     [0, 1, 2, 3, 4, 5].
+     *
+     * Now suppose there is a nested loop, and the number of iterations of the inner loop varies.
+     * The user steps forward through the inner loop, until iterationIndex is 5.
+     * Then they step in the outer loop and now the inner loop only has 3 iterations.
+     * iterationIndex will remain 5, so that if the user returns to where they were in the outer loop,
+     * everything goes back to how it was.
+     * But currentIteration() will return 2, the last possible index of `indices`.
+     */
     class LoopNavigator {
         int iterationIndex = 0;
-        int treeIndex;
-        SmartPsiElementPointer pointer;
         List<Integer> indices;
+        int treeIndex;  // the tree_index of the loop statement
+        SmartPsiElementPointer pointer;
 
         private int currentIteration() {
             return Math.min(iterationIndex, indices.size() - 1);
@@ -458,6 +485,10 @@ public class Call {
             }
             return null;
         }
+
+        // In the methods below, `direction` is either:
+        // -1, meaning step backwards, the arrow pointing left, or
+        // +1, meaning step forwards,  the arrow pointing right
 
         boolean canNavigate(int direction) {
             int result = currentIteration() + direction;
@@ -473,13 +504,28 @@ public class Call {
 
     }
 
+    /**
+     * This is called when either the call is first created and viewed,
+     * or when the user steps through a loop. The nodes get fresh values
+     * and the appearance of many things can change.
+     *
+     * This corresponds somewhat to the render() function in call.js.
+     */
     private void update() {
+        // Updating the state of loops.
         for (LoopNavigator navigator : navigators.values()) {
             navigator.indices = Collections.emptyList();
         }
         updateLoopIndices(callData.loop_iterations);
+
+        // This kicks off checking for line markers, particularly letting
+        // LoopArrowLineMarkerProvider show new arrows.
         DaemonCodeAnalyzer.getInstance(project).restart();
+
+        // Update the tree in the inspector
         panel.updateValues();
+
+        // Update temporary highlighters, i.e. uncovered statements and exceptions
 
         for (HideableRangeHighlighter highlighter : tempHighlighters) {
             highlighter.hide();
@@ -505,13 +551,19 @@ public class Call {
         }
     }
 
+    /**
+     * Recursively update the loop navigators to have the correct list
+     * of indices based on the current loop iterations.
+     *
+     * Corresponds to the findRanges() function in call.js
+     */
     private void updateLoopIndices(Loops loops) {
         if (loops == null || loops.isEmpty()) {
             return;
         }
         for (Integer loopIndex : loops.keySet()) {
             Iteration[] iterations = loops.get(loopIndex);
-            LoopNavigator navigator = navigator(loopIndex);
+            LoopNavigator navigator = navigators.get(loopIndex);
             if (navigator == null) {
                 continue;
             }
@@ -520,6 +572,11 @@ public class Call {
         }
     }
 
+    /**
+     * Since Call holds a lot of data, when we no longer need one,
+     * we get rid of references to the data just in case there's a
+     * memory leak somewhere.
+     */
     void clearMemoryJustInCase() {
         callData.loop_iterations.clear();
         callData.node_values.clear();
@@ -534,6 +591,9 @@ public class Call {
             }
 
             treeNode.removeFromParent();
+        }
+        for (Node node : nodes.values()) {
+            node.inspectorTreeNode = null;
         }
         panel.selectedNodes.clear();
         panel = null;
