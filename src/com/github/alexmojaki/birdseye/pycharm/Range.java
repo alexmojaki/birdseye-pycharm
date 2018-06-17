@@ -3,8 +3,8 @@ package com.github.alexmojaki.birdseye.pycharm;
 import java.util.Objects;
 
 public class Range {
-    int start;
-    int end;
+    final int start;
+    final int end;
 
     Range(int start, int end) {
         this.start = start;

@@ -33,6 +33,11 @@ public class HoverListener extends EditorMouseMotionAdapter implements EditorMou
             return;
         }
 
+        // When the user hovers the mouse over a character,
+        // it's generally not exactly at one document offset. Rather it's
+        // between two offsets. We want to find the lower of these two offsets,
+        // i.e. the one to the left of the cursor. Then the cursor is between
+        // offset and offset+1. See Call.nodeAtPosition (called below)
         Point point = new Point(mouseEvent.getPoint());
         LogicalPosition pos = editor.xyToLogicalPosition(point);
         int offset = editor.logicalPositionToOffset(pos);

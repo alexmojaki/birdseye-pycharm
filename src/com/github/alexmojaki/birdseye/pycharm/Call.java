@@ -143,6 +143,12 @@ public class Call {
         processHighlighters(HideableRangeHighlighter::show);
     }
 
+    /**
+     * This corresponds to the NodeValue Python class in birdseye.
+     * It has data stored as JSON about a Node for a particular iteration in
+     * a call. The data is interpreted, particularly to be displayed
+     * in a tree in the inspector panel.
+     */
     public class NodeValue {
 
         JsonArray arr;
@@ -241,6 +247,12 @@ public class Call {
 
     }
 
+    // These classes correspond to JSON returned by the API,
+    // pretty much as they are in the database
+
+    /**
+     * The data column of the call table
+     */
     public static class CallData {
         Map<Integer, JsonElement> node_values;
         String[] type_names;
@@ -248,14 +260,21 @@ public class Call {
         int num_special_types;
     }
 
+    /**
+     * The Iteration class in Python birdseye
+     */
     static class Iteration {
         int index;
         Loops loops;
     }
 
+    // Basically a type alias
     static class Loops extends HashMap<Integer, Iteration[]> {
     }
 
+    /**
+     * The data column of the function table
+     */
     static class FunctionData {
         NodeRange[] node_ranges;
         NodeRange[] loop_nodes;
@@ -264,7 +283,7 @@ public class Call {
 
     static class NodeRange {
         int depth;
-        int node;
+        int node;  // _tree_index
         int start;
         int end;
         List<String> classes;
@@ -274,6 +293,10 @@ public class Call {
         }
     }
 
+    /**
+     * Returns a list of nodes corresponding to range markers that
+     * contain (inclusively) the given offset in the document.
+     */
     private List<Node> nodesOverlappingWith(int offset) {
         List<Node> nodes = new ArrayList<>();
         document().processRangeMarkersOverlappingWith(offset, offset, rangeMarker -> {
@@ -290,6 +313,11 @@ public class Call {
         return nodes;
     }
 
+    /**
+     * Return the deepest (i.e. most specific) node that has a value
+     * and whose range contains both offset and offset+1. The idea is
+     * that the mouse cursor is between offset and offset+1.
+     */
     public Node nodeAtPosition(int offset) {
         List<Node> nodes = nodesOverlappingWith(offset);
         nodes.retainAll(nodesOverlappingWith(offset + 1));
@@ -328,9 +356,19 @@ public class Call {
             String originalText = text();
             String currentText = document().getText(textRange);
             boolean result = originalText.equals(currentText);
-            if (!result && range.classes.isEmpty() &&
-                    !originalText.contains("'") &&
-                    !originalText.contains("\"")) {
+            if (
+                // If the text doesn't match exactly, the range might still be valid
+                // if the user has just added some insignificant whitespace, which is possible if...
+                    !result
+                            // the node represents an expression (so indentation doesn't matter)
+                            && range.classes.isEmpty()
+                            // and the expression doesn't contain strings. We don't actually check
+                            // if the whitespace is inside a string because that's too hard, so
+                            // this is a little more restrictive than necessary
+                            && !originalText.contains("'")
+                            && !originalText.contains("\"")
+                    ) {
+                // Check if whitespace is the only difference
                 originalText = originalText.replaceAll("\\s", "");
                 currentText = currentText.replaceAll("\\s", "");
                 result = originalText.equals(currentText);
