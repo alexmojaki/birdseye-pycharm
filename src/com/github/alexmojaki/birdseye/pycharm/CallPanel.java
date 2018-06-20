@@ -79,10 +79,8 @@ public class CallPanel extends JBPanel {
                 List<String> path = mapToList(
                         treeNodes,
                         n -> ((InspectorTreeNode) n).label);
-                synchronized (tree) {
-                    Call.Node node = ((InspectorTreeNode) treeNodes[1]).node;
-                    func.accept(node, path.subList(2, path.size()));
-                }
+                Call.Node node = ((InspectorTreeNode) treeNodes[1]).node;
+                func.accept(node, path.subList(2, path.size()));
             }
 
             @Override
@@ -145,12 +143,10 @@ public class CallPanel extends JBPanel {
         model.nodeStructureChanged(root);
 
         List<TreePath> paths = new ArrayList<>();
-        synchronized (tree) {
-            for (int i = 0; i < root.getChildCount(); i++) {
-                InspectorTreeNode valueRoot = (InspectorTreeNode) root.getChildAt(i);
-                for (List<String> path : openPaths.get(valueRoot.node)) {
-                    paths.add(labelsPathToTreePath(valueRoot, path));
-                }
+        for (int i = 0; i < root.getChildCount(); i++) {
+            InspectorTreeNode valueRoot = (InspectorTreeNode) root.getChildAt(i);
+            for (List<String> path : openPaths.get(valueRoot.node)) {
+                paths.add(labelsPathToTreePath(valueRoot, path));
             }
         }
 
