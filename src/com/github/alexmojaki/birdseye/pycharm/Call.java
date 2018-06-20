@@ -165,7 +165,7 @@ public class Call {
             this.arr = arr;
         }
 
-        InspectorTreeNode treeNode(String prefix) {
+        @NotNull InspectorTreeNode treeNode(String prefix) {
             InspectorTreeNode result;
             if (isExpression()) {
                 String typeName = typeName();
@@ -430,14 +430,14 @@ public class Call {
             return new NodeValue(element.getAsJsonArray());
         }
 
-        InspectorTreeNode inspectorTreeNode() {
+        @NotNull InspectorTreeNode inspectorTreeNode() {
             if (inspectorTreeNode == null) {
                 return freshInspectorTreeNode();
             }
             return inspectorTreeNode;
         }
 
-        InspectorTreeNode freshInspectorTreeNode() {
+        @NotNull InspectorTreeNode freshInspectorTreeNode() {
             String prefix = truncate(collapseWhitespace(text()), 50);
             inspectorTreeNode = value().treeNode(prefix);
             inspectorTreeNode.node = this;

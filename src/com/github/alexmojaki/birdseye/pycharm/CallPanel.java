@@ -29,10 +29,24 @@ import static com.github.alexmojaki.birdseye.pycharm.Utils.mapToList;
 import static com.github.alexmojaki.birdseye.pycharm.Utils.tag;
 import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
 
+/**
+ * This is the panel shown for a single call. Its main feature is the inspector, a
+ * tree of nodes selected for inspection.
+ */
 public class CallPanel extends JBPanel {
     private final DefaultTreeModel model = new DefaultTreeModel(new InspectorTreeNode.Root());
     private final Tree tree = new Tree(model);
     final Map<Call.Node, HideableRangeHighlighter> selectedNodes = new LinkedHashMap<>();
+
+    /**
+     * This tracks the paths that are open in the inspector, i.e. values expanded, however
+     * deep down in the tree. The keys are the nodes being inspected, the 'roots' of the
+     * tree. The values are lists of labels. So if the user has selected an expression 'a'
+     * in the code, and is looking at the attribute a.b.c, then 'a' is a key and ['b', 'c']
+     * is a value. When the user steps through a loop and the values and thus the structure
+     * of the tree change, this is used to open the paths in the newly created tree nodes
+     * (if they still exist).
+     */
     private final MultiMap<Call.Node, List<String>> openPaths = MultiMap.createSet();
 
     // This either shows the inspector tree, or when it's empty, an explanation of what to do
@@ -72,6 +86,7 @@ public class CallPanel extends JBPanel {
         cardPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         label.setAlignmentX(Component.LEFT_ALIGNMENT);
 
+        // Tracking expanded nodes in openPaths
         tree.addTreeExpansionListener(new TreeExpansionListener() {
 
             private void processPath(TreeExpansionEvent event, BiConsumer<Call.Node, List<String>> func) {
@@ -79,6 +94,10 @@ public class CallPanel extends JBPanel {
                 List<String> path = mapToList(
                         treeNodes,
                         n -> ((InspectorTreeNode) n).label);
+                // treeNodes[0] is the invisible root
+                // treeNodes[1] is the 'root', the node being inspected
+                // treeNodes[2], treeNodes[3], etc. are the inner values,
+                // e.g. attributes, and their labels are the ones we care about.
                 Call.Node node = ((InspectorTreeNode) treeNodes[1]).node;
                 func.accept(node, path.subList(2, path.size()));
             }
@@ -94,6 +113,7 @@ public class CallPanel extends JBPanel {
             }
         });
 
+        // Allowing deleting (unselecting) nodes from the inspector
         tree.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -108,6 +128,9 @@ public class CallPanel extends JBPanel {
         });
     }
 
+    /**
+     * Select or unselect a node for inspection.
+     */
     void toggleSelectedNode(Call.Node node) {
         DefaultMutableTreeNode root = root();
         DefaultMutableTreeNode treeNode = node.inspectorTreeNode();
@@ -116,9 +139,6 @@ public class CallPanel extends JBPanel {
             selectedNodes.remove(node);
             treeNode.removeFromParent();
         } else {
-            if (treeNode == null) {
-                return;
-            }
             model.insertNodeInto(treeNode, root, 0);
 
             TextAttributes attributes = new TextAttributes();
