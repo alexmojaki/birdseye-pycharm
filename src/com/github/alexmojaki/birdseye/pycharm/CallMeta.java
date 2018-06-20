@@ -9,32 +9,15 @@ import java.util.Date;
 import static com.github.alexmojaki.birdseye.pycharm.Utils.*;
 import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
 
+@SuppressWarnings("WeakerAccess")
 class CallMeta {
 
-    static final String[] columns = new String[]{"Start time", "Arguments", "Result"};
-
     String id;
-    private String start_time;
-    private String[][] arguments;
-    private String return_value;
-    private String exception;
-    private String traceback;
-
-    String cell(int col) {
-        if (col == 0) {
-            return startTime();
-        } else if (col == 1) {
-            return tag("html", argumentsList());
-        } else if (col == 2) {
-            if (exception != null) {
-                return exception;
-            } else {
-                return return_value;
-            }
-        } else {
-            throw new RuntimeException(col + "");
-        }
-    }
+    String start_time;
+    String[][] arguments;
+    String return_value;
+    String exception;
+    String traceback;
 
     String argumentsList() {
         if (arguments.length == 0) {

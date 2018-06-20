@@ -97,11 +97,14 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
 
             final JTable table = new JBTableWithRowHeaders(true);
             centralComponent = table;
+
+            final String[] columns = new String[]{"Start time", "Arguments", "Result"};
+
             table.setModel(new AbstractTableModel() {
 
                 @Override
                 public String getColumnName(int column) {
-                    return CallMeta.columns[column];
+                    return columns[column];
                 }
 
                 @Override
@@ -111,12 +114,22 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
 
                 @Override
                 public int getColumnCount() {
-                    return CallMeta.columns.length;
+                    return columns.length;
                 }
 
                 @Override
                 public Object getValueAt(int rowIndex, int columnIndex) {
-                    return rows.get(rowIndex).cell(columnIndex);
+                    CallMeta meta = rows.get(rowIndex);
+                    switch (columnIndex) {
+                        case 0:
+                            return meta.startTime();
+                        case 1:
+                            return tag("html", meta.argumentsList());
+                        case 2:
+                            return meta.exception != null ? meta.exception : meta.return_value;
+                        default:
+                            throw new RuntimeException(columnIndex + "");
+                    }
                 }
             });
             table.setPreferredScrollableViewportSize(new Dimension(500, 70));
