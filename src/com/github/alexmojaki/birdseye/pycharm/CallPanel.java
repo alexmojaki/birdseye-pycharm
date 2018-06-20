@@ -34,12 +34,16 @@ public class CallPanel extends JBPanel {
     private final Tree tree = new Tree(model);
     final Map<Call.Node, HideableRangeHighlighter> selectedNodes = new LinkedHashMap<>();
     private final MultiMap<Integer, List<Integer>> openPaths = MultiMap.createSet();
+
+    // This either shows the inspector tree, or when it's empty, an explanation of what to do
     private CardLayout cardLayout = new CardLayout();
     private JBPanel cardPanel = new JBPanel(cardLayout);
 
     CallPanel(Call call) {
         super();
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+
+        // Basic metadata about the call
         String information = Arrays.stream(new String[][]{
                 {"Arguments", call.meta.argumentsList()},
                 {"Start time", call.meta.startTime()},
@@ -56,8 +60,12 @@ public class CallPanel extends JBPanel {
         JBPanel treePanel = new JBPanel<>(new BorderLayout());
         treePanel.add(tree);
         cardPanel.add(treePanel, "tree");
+
+        // Expand the actual root node and hide it, giving the impression
+        // of many roots, one for each value
         tree.expandRow(0);
         tree.setRootVisible(false);
+
         tree.setCellRenderer(new InspectorTreeCellRenderer());
 
         setAlignmentX(Component.LEFT_ALIGNMENT);
