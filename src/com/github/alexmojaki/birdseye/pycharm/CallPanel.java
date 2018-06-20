@@ -33,7 +33,7 @@ public class CallPanel extends JBPanel {
     private final DefaultTreeModel model = new DefaultTreeModel(new InspectorTreeNode.Root());
     private final Tree tree = new Tree(model);
     final Map<Call.Node, HideableRangeHighlighter> selectedNodes = new LinkedHashMap<>();
-    private final MultiMap<Integer, List<Integer>> openPaths = MultiMap.createSet();
+    private final MultiMap<Call.Node, List<String>> openPaths = MultiMap.createSet();
 
     // This either shows the inspector tree, or when it's empty, an explanation of what to do
     private CardLayout cardLayout = new CardLayout();
@@ -74,12 +74,14 @@ public class CallPanel extends JBPanel {
 
         tree.addTreeExpansionListener(new TreeExpansionListener() {
 
-            private void processPath(TreeExpansionEvent event, BiConsumer<Integer, List<Integer>> func) {
-                List<Integer> path = mapToList(
-                        event.getPath().getPath(),
-                        n -> ((InspectorTreeNode) n).index);
+            private void processPath(TreeExpansionEvent event, BiConsumer<Call.Node, List<String>> func) {
+                Object[] treeNodes = event.getPath().getPath();
+                List<String> path = mapToList(
+                        treeNodes,
+                        n -> ((InspectorTreeNode) n).label);
                 synchronized (tree) {
-                    func.accept(path.get(1), path.subList(2, path.size()));
+                    Call.Node node = ((InspectorTreeNode) treeNodes[1]).node;
+                    func.accept(node, path.subList(2, path.size()));
                 }
             }
 
@@ -146,8 +148,8 @@ public class CallPanel extends JBPanel {
         synchronized (tree) {
             for (int i = 0; i < root.getChildCount(); i++) {
                 InspectorTreeNode valueRoot = (InspectorTreeNode) root.getChildAt(i);
-                for (List<Integer> path : openPaths.get(valueRoot.index)) {
-                    paths.add(indexToTreePath(valueRoot, path));
+                for (List<String> path : openPaths.get(valueRoot.node)) {
+                    paths.add(labelsPathToTreePath(valueRoot, path));
                 }
             }
         }
@@ -157,12 +159,21 @@ public class CallPanel extends JBPanel {
         }
     }
 
-    private TreePath indexToTreePath(TreeNode root, List<Integer> path) {
-        for (Integer index : path) {
-            if (index >= root.getChildCount()) {
+    private TreePath labelsPathToTreePath(TreeNode root, List<String> path) {
+        for (String label : path) {
+            boolean found = false;
+            for (int i = 0; i < root.getChildCount(); i++) {
+                TreeNode child = root.getChildAt(i);
+                if (((InspectorTreeNode) child).label.equals(label)) {
+                    root = child;
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
                 return null;
             }
-            root = root.getChildAt(index);
         }
         return new TreePath(((DefaultMutableTreeNode) root).getPath());
 

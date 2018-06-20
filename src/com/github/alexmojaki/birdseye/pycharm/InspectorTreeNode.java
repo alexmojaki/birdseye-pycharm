@@ -8,7 +8,7 @@ import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 public abstract class InspectorTreeNode extends DefaultMutableTreeNode {
-    int index;
+    Call.Node node;
     String label;
 
     abstract void render(ColoredTreeCellRenderer renderer);

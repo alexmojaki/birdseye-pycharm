@@ -165,7 +165,7 @@ public class Call {
             this.arr = arr;
         }
 
-        InspectorTreeNode treeNode(int index, String prefix) {
+        InspectorTreeNode treeNode(String prefix) {
             InspectorTreeNode result;
             if (isExpression()) {
                 String typeName = typeName();
@@ -198,13 +198,12 @@ public class Call {
             }
 
             result.label = prefix;
-            result.index = index;
 
             for (int i = 3; i < arr.size(); i++) {
                 JsonArray subarr = arr.get(i).getAsJsonArray();
                 String childPrefix = subarr.get(0).getAsString();
                 NodeValue child = new NodeValue(subarr.get(1).getAsJsonArray());
-                InspectorTreeNode childTreeNode = child.treeNode(i - 3, childPrefix);
+                InspectorTreeNode childTreeNode = child.treeNode(childPrefix);
                 result.add(childTreeNode);
             }
 
@@ -440,7 +439,8 @@ public class Call {
 
         InspectorTreeNode freshInspectorTreeNode() {
             String prefix = truncate(collapseWhitespace(text()), 50);
-            inspectorTreeNode = value().treeNode(treeIndex(), prefix);
+            inspectorTreeNode = value().treeNode(prefix);
+            inspectorTreeNode.node = this;
             return inspectorTreeNode;
         }
 
