@@ -101,10 +101,10 @@ public class CallPanel extends JBPanel {
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_DELETE ||
                         e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
-                    selectedNodes.keySet().stream()
-                            .filter(n -> n.inspectorTreeNode == tree.getLastSelectedPathComponent())
-                            .findAny()
-                            .ifPresent(CallPanel.this::toggleSelectedNode);
+                    Call.Node node = ((InspectorTreeNode) tree.getLastSelectedPathComponent()).node;
+                    if (node != null && selectedNodes.containsKey(node)) {
+                        toggleSelectedNode(node);
+                    }
                 }
             }
         });
