@@ -20,7 +20,6 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
-import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
@@ -95,7 +94,7 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
         }
         List<CallMeta> rows = response.calls;
         JComponent centralComponent;
-        Consumer<Integer> openRow = null;
+        final Consumer<Integer> openRow;
 
         if (rows.isEmpty()) {
             centralComponent = new JBLabel(
@@ -103,6 +102,7 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
                             "<p>This means that the function definition ran, <br>" +
                             "but never the function itself.</p></html>"
             );
+            openRow = null;
         } else {
             BirdseyeFunction function = new BirdseyeFunction(psiFunction, response);
 
@@ -179,11 +179,10 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
                 contentManager.setSelectedContent(content);
             };
 
-            Consumer<Integer> finalOpenRow = openRow;
             table.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    finalOpenRow.consume(table.rowAtPoint(e.getPoint()));
+                    openRow.consume(table.rowAtPoint(e.getPoint()));
                 }
             });
 
