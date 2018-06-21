@@ -28,6 +28,9 @@ import java.util.List;
 
 import static com.github.alexmojaki.birdseye.pycharm.Utils.*;
 
+/**
+ * This puts the birdseye icon in the gutter next to functions which have been traced.
+ */
 public class EyeLineMarkerProvider implements LineMarkerProvider {
 
     @Nullable
@@ -36,6 +39,10 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
         return null;
     }
 
+    /**
+     * Find Python functions with body hashes matching those retrieved from the server,
+     * and add a line marker to them.
+     */
     @Override
     public void collectSlowLineMarkers(@NotNull List<PsiElement> elements, @NotNull Collection<LineMarkerInfo> result) {
         for (PsiElement element : elements) {
@@ -72,6 +79,10 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
         }
     }
 
+    /**
+     * Called when one of the gutter icons is clicked. Shows a panel in the birdseye tool window
+     * with a list of calls for the function.
+     */
     private void createCallsListPanel(PyFunction psiFunction) {
         final Project project = psiFunction.getProject();
         MyProjectComponent component = MyProjectComponent.getInstance(project);
@@ -132,7 +143,6 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
                     }
                 }
             });
-            table.setPreferredScrollableViewportSize(new Dimension(500, 70));
             table.setFillsViewportHeight(true);
 
             openRow = (row) -> {

@@ -135,9 +135,10 @@ public class CallPanel extends JBPanel {
         DefaultMutableTreeNode root = root();
         DefaultMutableTreeNode treeNode = node.inspectorTreeNode();
         if (selectedNodes.containsKey(node)) {
+            treeNode.removeFromParent();
+
             selectedNodes.get(node).hide();
             selectedNodes.remove(node);
-            treeNode.removeFromParent();
         } else {
             model.insertNodeInto(treeNode, root, 0);
 
@@ -147,6 +148,9 @@ public class CallPanel extends JBPanel {
             selectedNodes.put(node, node.addRangeHighlighter(attributes));
         }
         cardLayout.show(cardPanel, selectedNodes.isEmpty() ? "explanation" : "tree");
+
+        // Although the changes are quite simple, this has to be called either way
+        // to ensure the correct paths remain open
         updateValues();
     }
 
@@ -154,6 +158,11 @@ public class CallPanel extends JBPanel {
         return (DefaultMutableTreeNode) model.getRoot();
     }
 
+    /**
+     * Whenever the values that are to be shown in the inspector change,
+     * this method must be called to ensure that the structure of the tree
+     * is updated and the correct paths remain open.
+     */
     public void updateValues() {
         DefaultMutableTreeNode root = root();
         root.removeAllChildren();
@@ -162,7 +171,10 @@ public class CallPanel extends JBPanel {
         }
         model.nodeStructureChanged(root);
 
+        // Collect the paths and open them later, because we're iterating over
+        // openPaths, and tree.expandPath will trigger changes to openPaths
         List<TreePath> paths = new ArrayList<>();
+
         for (int i = 0; i < root.getChildCount(); i++) {
             InspectorTreeNode valueRoot = (InspectorTreeNode) root.getChildAt(i);
             for (List<String> path : openPaths.get(valueRoot.node)) {
@@ -175,6 +187,10 @@ public class CallPanel extends JBPanel {
         }
     }
 
+    /**
+     * Given a value 'root' and a list of labels representing the path
+     * to some inner node, return a corresponding TreePath suitable for tree.expandPath.
+     */
     private TreePath labelsPathToTreePath(TreeNode root, List<String> path) {
         for (String label : path) {
             boolean found = false;
