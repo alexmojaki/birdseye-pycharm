@@ -87,11 +87,12 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
         MyProjectComponent component = MyProjectComponent.getInstance(project);
 
         String hash = hashFunction(psiFunction);
-
         ApiClient.CallsByHashResponse response = component.apiClient.listCallsByBodyHash(hash);
-        if (response == null) {
+
+        if (response == null) { // indicates an error reaching the server
             return;
         }
+
         List<CallMeta> rows = response.calls;
         JComponent centralComponent;
         final Consumer<Integer> openRow;
@@ -131,12 +132,12 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
                 @Override
                 public Object getValueAt(int rowIndex, int columnIndex) {
                     CallMeta meta = rows.get(rowIndex);
-                    switch (columnIndex) {
-                        case 0:
+                    switch (getColumnName(columnIndex)) {
+                        case "Start time":
                             return meta.startTime();
-                        case 1:
+                        case "Arguments":
                             return tag("html", meta.argumentsList());
-                        case 2:
+                        case "Result":
                             return meta.exception != null ? meta.exception : meta.return_value;
                         default:
                             throw new RuntimeException(columnIndex + "");
@@ -145,6 +146,9 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
             });
             table.setFillsViewportHeight(true);
 
+            /* This is primarily called when a user clicks on a row of the table.
+             * It opens a panel for investigating the call corresponding to that row.
+             */
             openRow = (row) -> {
                 if (row < 0) {
                     return;
@@ -152,17 +156,19 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
                 CallMeta callMeta = rows.get(row);
                 Content content = null;
 
+                // Check if there is already a tab open for this call
                 for (Call call : component.calls) {
                     if (call.meta.id.equals(callMeta.id)) {
                         content = call.toolWindowContent;
                         break;
                     }
                 }
+
                 ContentManager contentManager = component.contentManager();
 
                 if (content == null) {
                     Call call = Call.get(callMeta, psiFunction, function);
-                    if (call == null) {
+                    if (call == null) {  // indicates an error reaching the server
                         return;
                     }
                     JPanel panel = new PanelWithSideButtons(project, call.panel);
@@ -198,6 +204,9 @@ public class EyeLineMarkerProvider implements LineMarkerProvider {
         content.setIcon(AllIcons.Nodes.DataTables);
         component.setCallsListContent(content);
 
+        // Shortcut for the user so that they don't have to click the obvious only row
+        // This has to be at the end so that it sets the new call panel as the selected panel,
+        // since just above the calls list panel is set as selected
         if (rows.size() == 1) {
             assert openRow != null;
             openRow.consume(0);

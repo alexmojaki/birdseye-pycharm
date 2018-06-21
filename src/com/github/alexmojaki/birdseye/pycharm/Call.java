@@ -61,7 +61,7 @@ public class Call {
 
         MyProjectComponent component = MyProjectComponent.getInstance(call.project);
         ApiClient.CallResponse callResponse = component.apiClient.getCall(callMeta.id);
-        if (callResponse == null) {
+        if (callResponse == null) {  // indicates an error reaching the server
             return null;
         }
 
@@ -601,10 +601,6 @@ public class Call {
         functionData.node_loops.clear();
         functionData.node_ranges = null;
         functionData = null;
-        birdseyeFunction.rangeMarkers.clear();
-        birdseyeFunction.loopRangeMarkers.clear();
-        birdseyeFunction.document = null;
-        birdseyeFunction = null;
         nodes.clear();
         navigators.clear();
         project = null;
