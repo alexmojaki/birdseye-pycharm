@@ -13,10 +13,18 @@ import java.util.List;
 
 import static com.github.alexmojaki.birdseye.pycharm.Utils.*;
 
+/**
+ * This class addresses some deficiencies in the RangeHighlighter class:
+ * - It can be temporarily hidden and later restored
+ * - It is shown in all editors (for the correct project at least) of the same document
+ */
 public class HideableRangeHighlighter {
 
+    /** The node being highlighted */
     private final Call.Node node;
     private final TextAttributes attributes;
+
+    /** The highlighters for each editor of the document */
     private List<RangeHighlighter> highlighters = new ArrayList<>();
 
     HideableRangeHighlighter(Call.Node node, TextAttributes attributes) {
@@ -25,16 +33,21 @@ public class HideableRangeHighlighter {
         show();
     }
 
+    /** Create a RangeHighlighter for each editor */
     void show() {
-        if (!highlighters.isEmpty()) {
+        if (!highlighters.isEmpty()) {  // i.e. if it's already showing
             return;
         }
+
         Project project = node.call().project;
         for (Editor editor : activeEditors(project)) {
             addFor(editor);
         }
     }
 
+    /**
+     * Add a single normal RangeHighlighter to this editor
+     */
     void addFor(Editor editor) {
         RangeMarker rm = node.rangeMarker();
 
@@ -61,8 +74,15 @@ public class HideableRangeHighlighter {
         });
     }
 
+    /** Destroy all the RangeHighlighters */
     void hide() {
         Project project = node.call().project;
+
+        // Happens if the call has been cleared
+        if (project == null) {
+            return;
+        }
+
         DumbService.getInstance(project).smartInvokeLater(() -> {
             List<Editor> editors = activeEditors(project);
             for (RangeHighlighter highlighter : highlighters) {

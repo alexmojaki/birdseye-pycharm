@@ -14,12 +14,25 @@ import com.intellij.openapi.project.Project;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 
+/**
+ * This class watches the mouse for hovering over and clicking on nodes in a call.
+ */
 public class HoverListener extends EditorMouseMotionAdapter implements EditorMouseListener {
     static final HoverListener INSTANCE = new HoverListener();
 
+    /**
+     * Highlights currentNode
+     */
     private HideableRangeHighlighter rangeHighlighter;
+
+    /**
+     * The node currently being hovered over
+     */
     private Call.Node currentNode = null;
 
+    /**
+     * Handle hovering over nodes
+     */
     @Override
     public void mouseMoved(EditorMouseEvent e) {
         Editor editor = e.getEditor();
@@ -29,6 +42,8 @@ public class HoverListener extends EditorMouseMotionAdapter implements EditorMou
         }
 
         MouseEvent mouseEvent = e.getMouseEvent();
+
+        // Without this, hovering over the gutter can trigger events
         if (mouseEvent.getSource() != editor.getContentComponent()) {
             return;
         }
@@ -46,6 +61,7 @@ public class HoverListener extends EditorMouseMotionAdapter implements EditorMou
             offset -= 1;
         }
 
+        // Find the node being hovered over, if there is one
         Call.Node node = null;
         for (Call call : MyProjectComponent.getInstance(project).activeCalls()) {
             if (!call.document().equals(editor.getDocument())) {
@@ -59,34 +75,46 @@ public class HoverListener extends EditorMouseMotionAdapter implements EditorMou
         }
 
         if (node == currentNode) {
+            // We're hovering over the same node as before (possibly none),
+            // no need to do anything
             return;
         }
+
         currentNode = node;
 
+        // Stop highlighting the previously hovered node
         if (rangeHighlighter != null) {
             rangeHighlighter.hide();
+            rangeHighlighter = null;
         }
 
-        if (node == null || node.isRangeInvalid()) {
+        Call.NodeValue nodeValue;
+        if (node == null
+                || node.isRangeInvalid()
+                || (nodeValue = node.value()) == null
+                || nodeValue.isNotInteresting()
+                ) {
+
+            // Highlight nothing
             HoverValueEditorLinePainter.repr = "";
             return;
         }
 
-        Call.NodeValue nodeValue = node.value();
-        if (nodeValue == null || nodeValue.isNotInteresting()) {
-            return;
-        }
+        // Show repr of hovered value at end of line
         HoverValueEditorLinePainter.moveExtensionToBeginning();
         HoverValueEditorLinePainter.repr = nodeValue.repr();
-        HoverValueEditorLinePainter.currentFile = FileDocumentManager.getInstance().getFile(e.getEditor().getDocument());
+        HoverValueEditorLinePainter.currentFile = FileDocumentManager.getInstance().getFile(editor.getDocument());
         HoverValueEditorLinePainter.currentProjectHash = project.getLocationHash();
         HoverValueEditorLinePainter.currentLineNumber = pos.line;
 
+        // Highlight text of node
         TextAttributes attributes = EditorColorsManager.getInstance().getGlobalScheme().getAttributes(DiffColors.DIFF_MODIFIED);
-
         rangeHighlighter = node.addRangeHighlighter(attributes);
     }
 
+    /**
+     * Handle clicking on nodes
+     */
     @Override
     public void mouseClicked(EditorMouseEvent e) {
         if (currentNode == null || currentNode.isRangeInvalid()) {
@@ -99,6 +127,8 @@ public class HoverListener extends EditorMouseMotionAdapter implements EditorMou
 
         currentNode.call().panel.toggleSelectedNode(currentNode);
     }
+
+    // Other methods of the interface EditorMouseListener
 
     @Override
     public void mousePressed(EditorMouseEvent e) {
