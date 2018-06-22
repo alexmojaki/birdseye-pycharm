@@ -30,9 +30,9 @@ public class HoverValueEditorLinePainter extends EditorLinePainter {
     @Override
     public Collection<LineExtensionInfo> getLineExtensions(@NotNull Project project, @NotNull VirtualFile file, int lineNumber) {
         if (!"".equals(repr)
-                && project.getLocationHash().equals(currentProjectHash)
+                && lineNumber == currentLineNumber
                 && file.equals(currentFile)
-                && lineNumber == currentLineNumber) {
+                && project.getLocationHash().equals(currentProjectHash)) {
             TextAttributes attributes = EditorColorsManager.getInstance().getGlobalScheme().getAttributes(HighlighterColors.TEXT).clone();
             attributes.setFontType(Font.ITALIC);
             return Collections.singletonList(new LineExtensionInfo("    " + repr, attributes));
