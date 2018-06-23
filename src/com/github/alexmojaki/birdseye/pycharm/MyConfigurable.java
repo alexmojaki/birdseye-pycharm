@@ -14,6 +14,9 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
 
+/**
+ * This provides the UI for changing settings.
+ */
 public class MyConfigurable implements Configurable {
     private LabeledField urlPanel;
     private LabeledField dbPanel;
@@ -34,7 +37,6 @@ public class MyConfigurable implements Configurable {
     public String getDisplayName() {
         return "birdseye";
     }
-
 
     @Nullable
     @Override
@@ -92,6 +94,11 @@ public class MyConfigurable implements Configurable {
                 errorLabel.setText("");
                 processMonitor.stop();
                 processMonitor.start();
+
+                // Actually checking what the server is doing is too much work
+                // The user can see an error message when the dialog is closed
+                // In the meantime at least show some movement so that they see
+                // that the button did something
                 Timer timer = new Timer(1000, ev -> statusLabel.setText("The server has been restarted"));
                 timer.setRepeats(false);
                 timer.start();
@@ -112,7 +119,7 @@ public class MyConfigurable implements Configurable {
         JButton finalRestartButton = restartButton;
 
         ActionListener actionListener = e -> {
-            boolean run = runServer();
+            boolean run = runServerChosen();
             portPanel.setEnabled(run);
             dbPanel.setEnabled(run);
             statusLabel.setEnabled(run);
@@ -132,7 +139,12 @@ public class MyConfigurable implements Configurable {
         return panel;
     }
 
-    private boolean runServer() {
+    /**
+     * True if the user has chosen the option to run the server in this settings dialog,
+     * as opposed to state().runServer which is the current confirmed setting outside
+     * the dialog.
+     */
+    private boolean runServerChosen() {
         return runServerRadioGroup.getSelection().getActionCommand().equals("run");
     }
 
@@ -141,12 +153,11 @@ public class MyConfigurable implements Configurable {
         return (portPanel.isModified() ||
                 dbPanel.isModified() ||
                 urlPanel.isModified() ||
-                runServer() != state().runServer);
+                runServerChosen() != state().runServer);
     }
 
     @Override
     public void apply() throws ConfigurationException {
-        state().runServer = runServer();
         String port = portPanel.textField.getText();
         ConfigurationException portError = new ConfigurationException(
                 "Port number must be an integer between 1024 and 65535");
@@ -161,6 +172,7 @@ public class MyConfigurable implements Configurable {
         portPanel.save();
         dbPanel.save();
         urlPanel.save();
+        state().runServer = runServerChosen();
         MyApplicationComponent.getInstance().updateServers();
     }
 
