@@ -176,6 +176,10 @@ public class MyConfigurable implements Configurable {
         MyApplicationComponent.getInstance().updateServers();
     }
 
+    /**
+     * A panel containing a text field and an associated label,
+     * which manages one String field in State named stateFieldName.
+     */
     class LabeledField extends JPanel {
         private JTextField textField;
         private JLabel label;

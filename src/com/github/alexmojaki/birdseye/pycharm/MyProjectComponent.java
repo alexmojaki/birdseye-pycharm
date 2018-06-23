@@ -71,11 +71,27 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
         this.state = state;
     }
 
+    /**
+     * The current (i.e. most recently retrieved when polling the server) hashes
+     * and whether or not they have calls
+     */
     Map<String, Boolean> functionHashes = new HashMap<>();
+
+    /**
+     * All calls currently being debugged.
+     * The order of this list changes and is important.
+     * When a call's panel is selected, the call moves to the beginning
+     * of this list. This way activeCalls() only returns the most recent
+     * call for each function.
+     */
     List<Call> calls = new ArrayList<>();
+
     private Content callsListContent = null;
     ApiClient apiClient;
+
+    /** Whether or not the tool window is visible */
     private boolean isActive = false;
+
     Timer timer = new Timer();
     ProcessMonitor processMonitor;
 
@@ -89,6 +105,7 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
         processMonitor = new ProcessMonitor(this);
     }
 
+    /** Run checkHashes 2 seconds from now in the correct thread */
     private void scheduleHashCheck() {
         timer.schedule(new TimerTask() {
             @Override
@@ -118,8 +135,12 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
             }
         };
 
+        // This function happens in the EventDispatchThread (EDT), which shouldn't be held up,
+        // especially for checking the server. We only needed the EDT
+        // for the list of active editors
         new Thread(() -> {
             try {
+                // Collect function body hashes for all functions in all editors
                 ReadAction.run(() -> {
                     for (Editor editor : activeEditors) {
                         PsiFile psiFile = PsiDocumentManager.getInstance(myProject)
@@ -129,22 +150,31 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
                     }
                 });
 
+                // Ask the server which of those body hashes are in the database
+                // Convert the result to a map the same structure as functionHashes
                 Map<String, Boolean> newFunctionHashesMap =
                         Arrays.stream(apiClient.getBodyHashesPresent(newFunctionHashes))
                                 .collect(Collectors.toMap(
                                         i -> i.hash,
                                         i -> i.count > 0));
 
+                // If any changes are detected, trigger a line marker pass in the IDE
+                // to refresh the birdseye icons shown by EyeLineMarkerProvider
                 if (!(newFunctionHashesMap.equals(functionHashes))) {
                     functionHashes = newFunctionHashesMap;
                     DaemonCodeAnalyzer.getInstance(myProject).restart();
                 }
             } finally {
+                // Check again in 2 seconds, regardless of errors
                 scheduleHashCheck();
             }
         }).start();
     }
 
+    /**
+     * Returns the ContentManager of the birdseye tool window,
+     * creating the tool window if it doesn't exist yet.
+     */
     ContentManager contentManager() {
         ToolWindow toolWindow = getToolWindow();
 
@@ -154,11 +184,15 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
                     true,
                     ToolWindowAnchor.BOTTOM
             );
+
             toolWindow.setIcon(BIRDSEYE_ICON);
+
             toolWindow.getContentManager().addContentManagerListener(new ContentManagerAdapter() {
-                private Call getCall(Content content) {
+
+                /** Find the only call which corresponds to this tool window content */
+                private Call getCall(ContentManagerEvent event) {
                     List<Call> matching = filterToList(calls,
-                            c -> c.toolWindowContent.equals(content));
+                            c -> c.toolWindowContent.equals(event.getContent()));
                     if (matching.isEmpty()) {
                         return null;
                     }
@@ -166,18 +200,20 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
                     return matching.get(0);
                 }
 
-                private Call getCall(ContentManagerEvent event) {
-                    return getCall(event.getContent());
-                }
-
+                /**
+                 * The user closed a call panel. Clear everything related
+                 * to that call.
+                 */
                 @Override
                 public void contentRemoved(ContentManagerEvent event) {
                     Call call = getCall(event);
-                    calls.remove(call);
                     if (call != null) {
+                        calls.remove(call);
                         call.hideHighlighters();
                         call.clearMemoryJustInCase();
                     }
+
+                    // Don't leave an empty tool window open
                     if (contentManager().getContentCount() == 0) {
                         getToolWindow().hide(null);
                     }

@@ -22,6 +22,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/** Does things when editors are created */
 public class MyEditorFactoryListener implements EditorFactoryListener {
 
     @Override
@@ -36,12 +37,15 @@ public class MyEditorFactoryListener implements EditorFactoryListener {
         Document document = editor.getDocument();
         VirtualFile file = FileDocumentManager.getInstance().getFile(document);
 
+        /*-- Display the loop iteration indices next to the loop arrows --*/
+
         editor.getGutter().registerTextAnnotation(new TextAnnotationGutterProvider() {
             @Override
             public String getLineText(int line, Editor editor) {
-
-                List<Call.LoopNavigator> navigators = new ArrayList<>();
                 for (Call call : MyProjectComponent.getInstance(project).activeCalls()) {
+
+                    // Find any navigators for this line
+                    List<Call.LoopNavigator> navigators = new ArrayList<>();
                     for (Call.LoopNavigator navigator : call.navigators.values()) {
                         PsiElement element = navigator.pointer.getElement();
                         if (element == null || !element.getContainingFile().getVirtualFile().equals(file)) {
@@ -59,9 +63,12 @@ public class MyEditorFactoryListener implements EditorFactoryListener {
                         continue;
                     }
 
+                    // Show the numbers in the same order as the targets are in the editor
+                    // so that it's easy to guess visually which is which
                     //noinspection ConstantConditions
                     navigators.sort(Comparator.comparing(n -> n.pointer.getRange().getStartOffset()));
 
+                    // At most one call can possibly be active at any line
                     return navigators.stream()
                             .map(Call.LoopNavigator::currentIterationDisplay)
                             .collect(Collectors.joining(" "));
@@ -103,6 +110,7 @@ public class MyEditorFactoryListener implements EditorFactoryListener {
             }
         });
 
+        // Show highlighters in all editors
         for (Call call : MyProjectComponent.getInstance(project).activeCalls()) {
             call.processHighlighters(h -> h.addFor(editor));
         }
