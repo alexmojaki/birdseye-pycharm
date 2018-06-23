@@ -17,6 +17,11 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.util.*;
 
+import static com.github.alexmojaki.birdseye.pycharm.Utils.*;
+
+/**
+ * Draw the left and right arrows for navigating loops
+ */
 public class LoopArrowLineMarkerProvider implements LineMarkerProvider {
 
     @Nullable
@@ -27,21 +32,18 @@ public class LoopArrowLineMarkerProvider implements LineMarkerProvider {
 
     @Override
     public void collectSlowLineMarkers(@NotNull List<PsiElement> elements, @NotNull Collection<LineMarkerInfo> result) {
-        if (elements.isEmpty()) {
-            return;
-        }
-
         Map<PsiElement, Call.LoopNavigator> navigatorMap = new HashMap<>();
-        Project project = elements.get(0).getProject();
-        MyProjectComponent component = MyProjectComponent.getInstance(project);
 
-        for (Call call : component.activeCalls()) {
-            for (Call.LoopNavigator navigator : call.navigators.values()) {
-                PsiElement element = navigator.pointer.getElement();
-                if (element == null) {
-                    continue;
+        for (Project project : new HashSet<>(mapToList(elements, PsiElement::getProject))) {
+            MyProjectComponent component = MyProjectComponent.getInstance(project);
+            for (Call call : component.activeCalls()) {
+                for (Call.LoopNavigator navigator : call.navigators.values()) {
+                    PsiElement element = navigator.pointer.getElement();
+                    if (element == null) {
+                        continue;
+                    }
+                    navigatorMap.put(element, navigator);
                 }
-                navigatorMap.put(element, navigator);
             }
         }
 

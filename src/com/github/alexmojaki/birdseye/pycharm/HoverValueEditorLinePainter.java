@@ -20,12 +20,15 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
+/**
+ * This class paints the repr of the value of the node being hovered over at the end of the line.
+ */
 public class HoverValueEditorLinePainter extends EditorLinePainter {
 
     static VirtualFile currentFile;
     static int currentLineNumber;
     static String repr;
-    public static String currentProjectHash;
+    static String currentProjectHash;
 
     @Override
     public Collection<LineExtensionInfo> getLineExtensions(@NotNull Project project, @NotNull VirtualFile file, int lineNumber) {
@@ -42,6 +45,13 @@ public class HoverValueEditorLinePainter extends EditorLinePainter {
 
     private static boolean reordered = false;
 
+    /**
+     * This is a naughty naughty hack but it seems there's no API to do it otherwise.
+     * It places my extension at the beginning, so if e.g. the user is using the debugger at the same time,
+     * the values of variables from the debugger get painted after (i.e. to the right of) the repr from this
+     * extension. I think this is justified since my line extensions are much more transient and only
+     * one line at any time, so they can have priority in visibility.
+     */
     static void moveExtensionToBeginning() {
         if (reordered) {
             return;
