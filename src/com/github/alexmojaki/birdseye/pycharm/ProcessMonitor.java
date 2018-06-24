@@ -19,16 +19,30 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * This class runs the birdseye server, watches the logs, reports errors, etc.
+ */
 class ProcessMonitor {
 
     private Process process;
     private MyProjectComponent projectComponent;
+
+    /**
+     * If true, the server was just stopped intentionally, so don't restart it or report an error
+     */
     private volatile boolean stopped = false;
 
+    // The settings that existed when the process started, i.e. the settings that
+    // the process is currently using
     private String dbUrl;
     private String port;
+
     private long startTime;
 
+    /**
+     * If the process died or cannot be run, this is a short description of why,
+     * displayed in the settings dialog. If the server is running fine, it's blank.
+     */
     String errorMessage = "";
 
     private static final Pattern OUTDATED_PATTERN = Pattern.compile(
@@ -39,6 +53,9 @@ class ProcessMonitor {
         this.projectComponent = projectComponent;
     }
 
+    /**
+     * Try to start the server process.
+     */
     void start() {
         String startFailed = "Could not start birdseye server";
         String checkEventLog = ": check Event Log for details";
@@ -50,6 +67,9 @@ class ProcessMonitor {
         Sdk projectSdk = ProjectRootManager.getInstance(projectComponent.getProject()).getProjectSdk();
         if (projectSdk == null) {
             errorMessage = "Waiting for a project interpreter to be found";
+
+            // This should generally only happen when the project is starting up.
+            // Check again in 1 second.
             projectComponent.timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
@@ -63,6 +83,8 @@ class ProcessMonitor {
         PyRequirement pyRequirement = packageManager
                 .parseRequirements("birdseye>=0.4.2")
                 .get(0);
+
+        // Try to find out which packages are installed
         List<PyPackage> packages;
         try {
             packages = packageManager.refreshAndGetPackages(false);
@@ -74,6 +96,8 @@ class ProcessMonitor {
             return;
         }
 
+        // Check if birdseye is installed. If not, show a message offering to install.
+        // Once it's installed, try starting the process again.
         if (pyRequirement.match(packages) == null) {
             errorMessage = "Required version of birdseye not installed";
             projectComponent.offerInstall(
@@ -94,9 +118,12 @@ class ProcessMonitor {
 
         startTime = System.currentTimeMillis();
 
+        // Empty dbUrl means let birdseye use the default sqlite database
         if (!dbUrl.isEmpty()) {
             commandLine.getEnvironment().put("BIRDSEYE_DB", dbUrl);
         }
+
+        // Actually try to run the process
         try {
             process = commandLine.createProcess();
         } catch (ExecutionException e) {
@@ -106,7 +133,12 @@ class ProcessMonitor {
             errorMessage = startFailed + checkEventLog;
             return;
         }
+
+        // Success! The process has started running. Now we monitor it.
         errorMessage = "";
+
+        // Store the 50 most recent lines from stderr, which includes
+        // logging and tracebacks. Really stdout should have nothing
         EvictingQueue<String> lines = EvictingQueue.create(50);
         InputStream errorStream = process.getErrorStream();
         Scanner scanner = new Scanner(errorStream, charsetName);
@@ -117,6 +149,8 @@ class ProcessMonitor {
                 String line = scanner.nextLine().trim();
                 if (!line.isEmpty()) {
                     lines.add(line);
+
+                    // birdseye will output a warning if it detects a newer version out there
                     Matcher matcher = OUTDATED_PATTERN.matcher(line);
                     if (matcher.find()) {
                         projectComponent.offerInstall(
@@ -128,10 +162,13 @@ class ProcessMonitor {
                 }
             }
 
+            // Whether intentionally or not, the end of the loop means the process has stopped
+            // If it's because of a call to stop(), do nothing
             if (stopped) {
                 return;
             }
 
+            // Otherwise, notify of the error and maybe start again
             String title = "birdseye process ended";
             long elapsed = runningTime();
             boolean restart = elapsed > 5000;
@@ -154,6 +191,9 @@ class ProcessMonitor {
         return System.currentTimeMillis() - startTime;
     }
 
+    /**
+     * Stop the server process
+     */
     void stop() {
         if (process == null) {
             return;
@@ -173,6 +213,10 @@ class ProcessMonitor {
         return process != null && process.isAlive();
     }
 
+    /**
+     * True if the server is running and the settings it's using
+     * don't match the latest settings
+     */
     boolean stateOutdated() {
         State state = projectComponent.state;
         return isRunning() &&

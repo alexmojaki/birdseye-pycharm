@@ -31,6 +31,12 @@ import javax.swing.*;
 import java.awt.*;
 
 
+/**
+ * Generic panel for the birdseye tool window, used for individual calls and lists of calls.
+ * Has buttons on the left for close, settings, and help.
+ *
+ * Based on PanelWithActionsAndCloseButton.
+ */
 class PanelWithSideButtons extends JPanel implements Disposable {
     private final ContentManager contentManager;
     private final Project project;

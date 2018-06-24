@@ -173,7 +173,7 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
 
     /**
      * Returns the ContentManager of the birdseye tool window,
-     * creating the tool window if it doesn't exist yet.
+     * creating and showing the tool window if it doesn't exist yet.
      */
     ContentManager contentManager() {
         ToolWindow toolWindow = getToolWindow();
@@ -219,6 +219,10 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
                     }
                 }
 
+                /**
+                 * The user selected a different call panel.
+                 * Change what's displayed accordingly.
+                 */
                 @Override
                 public void selectionChanged(ContentManagerEvent event) {
                     if (calls.size() > 1) {
@@ -227,8 +231,11 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
 
                     Call call = getCall(event);
                     if (call != null) {
+
+                        // Move call to the beginning of calls
                         calls.remove(call);
                         calls.add(0, call);
+
                         call.showHighlighters();
                     }
 
@@ -242,6 +249,9 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
         return toolWindow.getContentManager();
     }
 
+    /**
+     * Make the IDE update displays of highlighters, the gutter, etc.
+     */
     private void updateAllThings() {
         DaemonCodeAnalyzer.getInstance(myProject).restart();
         DumbService.getInstance(myProject).smartInvokeLater(() -> {
@@ -252,6 +262,10 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
         });
     }
 
+    /**
+     * Check every 0.2 seconds if the tool window is open.
+     * Only show birdseye stuff in the editor when it's open.
+     */
     private void scheduleActiveCheck(ToolWindow toolWindow) {
         timer.schedule(new TimerTask() {
             @Override
@@ -281,7 +295,7 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
 
     }
 
-    private ToolWindow getToolWindow() {
+    @Nullable private ToolWindow getToolWindow() {
         return ToolWindowManager.getInstance(myProject).getToolWindow("birdseye");
     }
 
@@ -292,7 +306,15 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
         return calls.get(0);
     }
 
-    List<Call> activeCalls() {
+    /**
+     * Returns a subset of calls which doesn't have two calls for the same
+     * function. Calls with more recently selected panels get priority.
+     *
+     * Two calls have the same function if they start at the same offset, so they can
+     * have different bodies. Therefore this will behave sensibly if the user
+     * debugs a function, edits it, and debugs it again, and both call panels are open.
+     */
+    @NotNull List<Call> activeCalls() {
         if (!isActive) {
             return Collections.emptyList();
         }
@@ -316,7 +338,7 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
         contentManager.addContent(content, 0);
         callsListContent = content;
         contentManager.setSelectedContent(content);
-        getToolWindow().show(null);
+        notNull(getToolWindow()).show(null);
     }
 
     void notifyError(String title, String message) {
@@ -345,6 +367,7 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
 
         scheduleHashCheck();
 
+        // Unselect nodes if their code is changed
         EditorFactory.getInstance().getEventMulticaster().addDocumentListener(new DocumentListener() {
             @Override
             public void documentChanged(DocumentEvent event) {
@@ -370,6 +393,12 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
         calls.clear();
     }
 
+    /**
+     * Return the ProcessMonitor of this component or another one with
+     * matching settings, favouring running monitors. That monitor is responsible
+     * for running the server that this project accesses, assuming this project
+     * wants to run its own server.
+     */
     ProcessMonitor responsibleProcessMonitor() {
         return MyApplicationComponent.getInstance()
                 .getServersBySettingsTable()
@@ -377,9 +406,15 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
                 .processMonitor;
     }
 
+    /**
+     * Shows a warning with title and message offering to install the latest version of
+     * birdseye. The message should include an 'a' tag for the user to click on.
+     * onInstalled will run after the installation completes successfully.
+     */
     void offerInstall(String title, String message, @Nullable Runnable onInstalled) {
         Sdk projectSdk = ProjectRootManager.getInstance(myProject).getProjectSdk();
         assert projectSdk != null;
+
         Function<Runnable, PyPackageManagerUI> ui = (runnable) -> new PyPackageManagerUI(myProject, projectSdk, new PyPackageManagerUI.Listener() {
             @Override
             public void started() {
@@ -392,7 +427,10 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
                 }
             }
         });
+
         final PyPackageManager packageManager = PyPackageManager.getInstance(projectSdk);
+
+        // Install birdseye, then run onInstalled
         Runnable install = () -> ui
                 .apply(onInstalled)
                 .install(packageManager.parseRequirements(
@@ -400,17 +438,23 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
                         Arrays.asList("--upgrade", "--upgrade-strategy", "only-if-needed"));
 
         NotificationListener.Adapter listener = new NotificationListener.Adapter() {
+            /**
+             * Runs when the user clicks the link offering to install
+             */
             @Override
             protected void hyperlinkActivated(@NotNull Notification notification, @NotNull HyperlinkEvent e) {
                 List<PyPackage> packages = packageManager.getPackages();
                 assert packages != null;
                 if (!PyPackageUtil.hasManagement(packages)) {
+                    // Install management packages, then birdseye
                     ui.apply(install).installManagement();
                 } else {
+                    // Just install birdseye
                     install.run();
                 }
             }
         };
+
         notify(title, message, listener, NotificationType.WARNING);
     }
 
