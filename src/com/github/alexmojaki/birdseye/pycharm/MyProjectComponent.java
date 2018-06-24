@@ -263,8 +263,8 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
                     isActive = toolWindow.isVisible();
                     DumbService.getInstance(myProject).smartInvokeLater(() -> {
                         if (isActive) {
-                            for (Call call : activeCalls()) {
-                                call.showHighlighters();
+                            if (!calls.isEmpty()) {
+                                calls.get(0).showHighlighters();
                             }
                         } else {
                             for (Call call : calls) {
@@ -283,6 +283,13 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
 
     private ToolWindow getToolWindow() {
         return ToolWindowManager.getInstance(myProject).getToolWindow("birdseye");
+    }
+
+    @Nullable Call currentCall() {
+        if (!isActive || calls.isEmpty()) {
+            return null;
+        }
+        return calls.get(0);
     }
 
     List<Call> activeCalls() {

@@ -125,7 +125,13 @@ public class HoverListener extends EditorMouseMotionAdapter implements EditorMou
             return;
         }
 
-        currentNode.call().panel.toggleSelectedNode(currentNode);
+        Call call = currentNode.call();
+        MyProjectComponent component = MyProjectComponent.getInstance(call.project);
+        if (component.currentCall() != call) {
+            return;
+        }
+
+        call.panel.toggleSelectedNode(currentNode);
     }
 
     // Other methods of the interface EditorMouseListener

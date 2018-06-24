@@ -35,15 +35,17 @@ public class LoopArrowLineMarkerProvider implements LineMarkerProvider {
         Map<PsiElement, Call.LoopNavigator> navigatorMap = new HashMap<>();
 
         for (Project project : new HashSet<>(mapToList(elements, PsiElement::getProject))) {
-            MyProjectComponent component = MyProjectComponent.getInstance(project);
-            for (Call call : component.activeCalls()) {
-                for (Call.LoopNavigator navigator : call.navigators.values()) {
-                    PsiElement element = navigator.pointer.getElement();
-                    if (element == null) {
-                        continue;
-                    }
-                    navigatorMap.put(element, navigator);
+            Call call = MyProjectComponent.getInstance(project).currentCall();
+            if (call == null) {
+                continue;
+            }
+
+            for (Call.LoopNavigator navigator : call.navigators.values()) {
+                PsiElement element = navigator.pointer.getElement();
+                if (element == null) {
+                    continue;
                 }
+                navigatorMap.put(element, navigator);
             }
         }
 
