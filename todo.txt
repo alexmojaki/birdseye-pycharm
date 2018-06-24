@@ -1,4 +1,3 @@
-comment
 README
 test
 release python side (add database versioning)
