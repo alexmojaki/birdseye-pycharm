@@ -373,7 +373,7 @@ public class Call {
             RangeMarker rangeMarker = rangeMarker();
 
             if (!rangeMarker.isValid()) {
-                return false;
+                return true;
             }
 
             TextRange textRange = new TextRange(

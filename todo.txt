@@ -1,4 +1,3 @@
-README
 test
 release python side (add database versioning)
 set correct min version
