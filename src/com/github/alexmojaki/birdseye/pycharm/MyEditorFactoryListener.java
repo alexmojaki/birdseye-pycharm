@@ -10,6 +10,7 @@ import com.intellij.openapi.editor.event.EditorFactoryEvent;
 import com.intellij.openapi.editor.event.EditorFactoryListener;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
@@ -50,16 +51,20 @@ public class MyEditorFactoryListener implements EditorFactoryListener {
                 }
 
                 // Find any navigators for this line
-                List<Call.LoopNavigator> navigators = new ArrayList<>();
+                // Immediately extract only the info we need, since pointers
+                // can become invalid halfway through this method
+                List<Pair<Integer, String>> navigators = new ArrayList<>();
                 for (Call.LoopNavigator navigator : call.navigators.values()) {
                     PsiElement element = navigator.pointer.getElement();
                     if (element == null || !element.getContainingFile().getVirtualFile().equals(file)) {
                         continue;
                     }
-                    int elementLine = editor.offsetToLogicalPosition(element.getTextOffset()).line;
+                    int offset = element.getTextOffset();
+                    int elementLine = editor.offsetToLogicalPosition(offset).line;
                     if (elementLine == line) {
-                        if (navigator.currentIterationDisplay() != null) {
-                            navigators.add(navigator);
+                        String iter = navigator.currentIterationDisplay();
+                        if (iter != null) {
+                            navigators.add(Pair.create(offset, iter));
                         }
                     }
                 }
@@ -70,11 +75,10 @@ public class MyEditorFactoryListener implements EditorFactoryListener {
 
                 // Show the numbers in the same order as the targets are in the editor
                 // so that it's easy to guess visually which is which
-                //noinspection ConstantConditions
-                navigators.sort(Comparator.comparing(n -> n.pointer.getRange().getStartOffset()));
+                navigators.sort(Comparator.comparing(p -> p.first));
 
                 return navigators.stream()
-                        .map(Call.LoopNavigator::currentIterationDisplay)
+                        .map(p -> p.second)
                         .collect(Collectors.joining(" "));
             }
 

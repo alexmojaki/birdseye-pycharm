@@ -19,6 +19,7 @@ import com.intellij.ui.content.Content;
 import com.intellij.util.containers.MultiMap;
 import com.jetbrains.python.psi.PyFunction;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.*;
@@ -415,7 +416,7 @@ public class Call {
          *
          * This corresponds to the `get_value` function in call.js in plain birdseye.
          */
-        NodeValue value() {
+        @Nullable NodeValue value() {
             JsonElement element = callData.node_values.get(treeIndex());
             for (int loopIndex : functionData.node_loops.getOrDefault(treeIndex(), EMPTY_INTS)) {
                 LoopNavigator navigator = navigators.get(loopIndex);
