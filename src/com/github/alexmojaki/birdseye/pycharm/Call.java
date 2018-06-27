@@ -154,7 +154,7 @@ public class Call {
      * It has data stored as JSON about a Node for a particular iteration in
      * a call. The data is interpreted, particularly to be displayed
      * in a tree in the inspector panel.
-     *
+     * <p>
      * This corresponds somewhat to the make_jstree_nodes function in call.js in plain birdseye,
      * but better organised.
      */
@@ -166,7 +166,8 @@ public class Call {
             this.arr = arr;
         }
 
-        @NotNull InspectorTreeNode treeNode(String prefix) {
+        @NotNull
+        InspectorTreeNode treeNode(String prefix) {
             InspectorTreeNode result;
             if (isExpression()) {
                 String typeName = typeName();
@@ -410,13 +411,14 @@ public class Call {
         /**
          * Return the value of the node at the 'current time' in the program
          * based on the current loop iterations.
-         *
+         * <p>
          * Returns null if there is no value at this time because the code didn't execute,
          * e.g. because of an if statement.
-         *
+         * <p>
          * This corresponds to the `get_value` function in call.js in plain birdseye.
          */
-        @Nullable NodeValue value() {
+        @Nullable
+        NodeValue value() {
             JsonElement element = callData.node_values.get(treeIndex());
             for (int loopIndex : functionData.node_loops.getOrDefault(treeIndex(), EMPTY_INTS)) {
                 LoopNavigator navigator = navigators.get(loopIndex);
@@ -431,16 +433,21 @@ public class Call {
             return new NodeValue(element.getAsJsonArray());
         }
 
-        @NotNull InspectorTreeNode inspectorTreeNode() {
+        @NotNull
+        InspectorTreeNode inspectorTreeNode() {
             if (inspectorTreeNode == null) {
                 return freshInspectorTreeNode();
             }
             return inspectorTreeNode;
         }
 
-        @NotNull InspectorTreeNode freshInspectorTreeNode() {
+        @NotNull
+        InspectorTreeNode freshInspectorTreeNode() {
             String prefix = truncate(collapseWhitespace(text()), 50);
-            inspectorTreeNode = value().treeNode(prefix);
+            NodeValue value = value();
+            inspectorTreeNode = value == null ?
+                    new InspectorTreeNode.NotEvaluated(prefix) :
+                    value.treeNode(prefix);
             inspectorTreeNode.node = this;
             return inspectorTreeNode;
         }
@@ -453,15 +460,15 @@ public class Call {
     /**
      * This class manages the state of a loop, both so that nodes can know
      * their current value and to display the arrows and iteration number on the side.
-     *
+     * <p>
      * Suppose there is a loop in the code that iterates 100 times. birdseye will keep the first
      * and last few iterations of this loop.
-     *
+     * <p>
      * - `indices` will be [0, 1, 2, 97, 98, 99]
      * - currentIterationDisplay() will return one of the above values.
      * - iterationIndex and currentIteration() will be an index of `indices`, i.e. one of the values
-     *     [0, 1, 2, 3, 4, 5].
-     *
+     * [0, 1, 2, 3, 4, 5].
+     * <p>
      * Now suppose there is a nested loop, and the number of iterations of the inner loop varies.
      * The user steps forward through the inner loop, until iterationIndex is 5.
      * Then they step in the outer loop and now the inner loop only has 3 iterations.
@@ -509,7 +516,7 @@ public class Call {
      * This is called when either the call is first created and viewed,
      * or when the user steps through a loop. The nodes get fresh values
      * and the appearance of many things can change.
-     *
+     * <p>
      * This corresponds somewhat to the render() function in call.js.
      */
     private void update() {
@@ -555,7 +562,7 @@ public class Call {
     /**
      * Recursively update the loop navigators to have the correct list
      * of indices based on the current loop iterations.
-     *
+     * <p>
      * Corresponds to the findRanges() function in call.js
      */
     private void updateLoopIndices(Loops loops) {

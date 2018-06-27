@@ -1,5 +1,5 @@
 inner open paths
-null node value for tree node?
+invalidate exception highlighter
 
 test
 release python side (add database versioning)

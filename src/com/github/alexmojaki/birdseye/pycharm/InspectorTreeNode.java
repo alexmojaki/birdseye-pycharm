@@ -71,6 +71,9 @@ public abstract class InspectorTreeNode extends DefaultMutableTreeNode {
         }
     }
 
+    /**
+     * The always invisible root of the inspector tree, doesn't correspond to a value.
+     */
     static class Root extends InspectorTreeNode {
 
         @Override
@@ -78,5 +81,23 @@ public abstract class InspectorTreeNode extends DefaultMutableTreeNode {
         }
     }
 
+    /**
+     * Used when navigating through a loop leads to an inspected node not having
+     * a value at that time.
+     */
+    static class NotEvaluated extends InspectorTreeNode {
+
+        // This is the only time we have to provide a label in the constructor
+        // because this isn't created in the NodeValue.treeNode method
+        NotEvaluated(String label) {
+            this.label = label;
+        }
+
+        @Override
+        void render(ColoredTreeCellRenderer renderer) {
+            renderer.append("not evaluated", SimpleTextAttributes.GRAYED_ITALIC_ATTRIBUTES);
+            renderer.setIcon(AllIcons.Actions.Clear);
+        }
+    }
 
 }
