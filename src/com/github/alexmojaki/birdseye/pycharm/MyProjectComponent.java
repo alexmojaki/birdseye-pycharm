@@ -10,10 +10,7 @@ import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.RangeMarker;
-import com.intellij.openapi.editor.event.DocumentEvent;
-import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.Sdk;
@@ -364,25 +361,7 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
     @Override
     public void projectOpened() {
         MyApplicationComponent.getInstance().updateServers();
-
         scheduleHashCheck();
-
-        // Unselect nodes if their code is changed
-        EditorFactory.getInstance().getEventMulticaster().addDocumentListener(new DocumentListener() {
-            @Override
-            public void documentChanged(DocumentEvent event) {
-                for (Call call : calls) {
-                    if (!event.getDocument().equals(call.document())) {
-                        continue;
-                    }
-                    for (Call.Node node : new ArrayList<>(call.panel.selectedNodes.keySet())) {
-                        if (node.isRangeInvalid()) {
-                            call.panel.toggleSelectedNode(node);
-                        }
-                    }
-                }
-            }
-        }, myProject);
     }
 
     @Override

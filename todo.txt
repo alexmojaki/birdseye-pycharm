@@ -1,5 +1,4 @@
 inner open paths
-don't unselect invalid nodes
 null node value for tree node?
 
 test
