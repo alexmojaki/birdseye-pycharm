@@ -25,6 +25,7 @@ import javax.swing.*;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static com.github.alexmojaki.birdseye.pycharm.Utils.*;
 
@@ -50,6 +51,7 @@ public class Call {
     Content toolWindowContent;
     BirdseyeFunction birdseyeFunction;
     CallMeta meta;
+    List<HideableRangeHighlighter> exceptionHighlighters = new ArrayList<>();
 
     /**
      * Gets all the data about a call from the server. If there's an error, returns null.
@@ -547,16 +549,19 @@ public class Call {
         attributes = new TextAttributes();
         attributes.setEffectType(EffectType.ROUNDED_BOX);
         attributes.setEffectColor(JBColor.RED);
-        addTempHighlighters(n -> {
+        exceptionHighlighters = addTempHighlighters(n -> {
             NodeValue value = n.value();
             return value != null && value.isException();
         }, attributes);
     }
 
-    private void addTempHighlighters(Predicate<Node> predicate, TextAttributes attributes) {
-        for (Node node : filterToList(nodes.values(), predicate)) {
-            tempHighlighters.add(node.addRangeHighlighter(attributes));
-        }
+    private List<HideableRangeHighlighter> addTempHighlighters(Predicate<Node> predicate, TextAttributes attributes) {
+        List<HideableRangeHighlighter> highlighters = nodes.values().stream()
+                .filter(predicate)
+                .map(node -> node.addRangeHighlighter(attributes))
+                .collect(Collectors.toList());
+        tempHighlighters.addAll(highlighters);
+        return highlighters;
     }
 
     /**

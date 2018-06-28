@@ -21,7 +21,7 @@ import static com.github.alexmojaki.birdseye.pycharm.Utils.*;
 public class HideableRangeHighlighter {
 
     /** The node being highlighted */
-    private final Call.Node node;
+    final Call.Node node;
     private final TextAttributes attributes;
 
     /** The highlighters for each editor of the document */
