@@ -193,7 +193,12 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
 
             toolWindow.getContentManager().addContentManagerListener(new ContentManagerAdapter() {
 
-                /** Find the only call which corresponds to this tool window content */
+                /**
+                 * Find the only call which corresponds to this tool window content.
+                 * Null if no call was selected, either if the calls list was selected
+                 * or all panels were closed.
+                 */
+                @Nullable
                 private Call getCall(ContentManagerEvent event) {
                     List<Call> matching = filterToList(calls,
                             c -> c.toolWindowContent.equals(event.getContent()));
