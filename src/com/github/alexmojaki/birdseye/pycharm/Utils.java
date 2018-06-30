@@ -3,16 +3,20 @@ package com.github.alexmojaki.birdseye.pycharm;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.intellij.codeInsight.daemon.impl.EditorTracker;
+import com.intellij.lang.ASTNode;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.ex.DocumentEx;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.psi.tree.TokenSet;
 import com.jetbrains.python.PyTokenTypes;
 import com.jetbrains.python.psi.PyFunction;
+import com.jetbrains.python.psi.PyStatement;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -60,13 +64,42 @@ public class Utils {
         return DigestUtils.sha256Hex(getFunctionText(function));
     }
 
+    private static final TokenSet INSIGNIFICANT_TOKENS = TokenSet.orSet(
+            PyTokenTypes.WHITESPACE_OR_LINEBREAK,
+            TokenSet.create(PyTokenTypes.END_OF_LINE_COMMENT));
+
     /**
      * Returns the body of a function (PSI element), from the def token
-     * until the last non-space character.
+     * until the last significant character of the last statement.
      */
     static String getFunctionText(PyFunction function) {
-        int start = getFunctionStart(function) - function.getTextRange().getStartOffset();
-        String text = function.getText().substring(start);
+        int absoluteFunctionStart = function.getTextRange().getStartOffset();
+        int start = getFunctionStart(function)
+                - absoluteFunctionStart;
+
+        // Find the last single-part statement, which may be nested inside
+        // multipart statements (e.g. loops)
+        final PyStatement[] lastStatement = {function};
+        PsiRecursiveElementWalkingVisitor visitor = new PsiRecursiveElementWalkingVisitor() {
+            @Override
+            protected void elementFinished(@NotNull PsiElement element) {
+                if (element instanceof PyStatement &&
+                        element.getTextRange().getStartOffset() >
+                                lastStatement[0].getTextRange().getStartOffset()) {
+                    lastStatement[0] = (PyStatement) element;
+                }
+            }
+        };
+        visitor.visitElement(function);
+
+        // Get the last node in that statement which isn't a comment or whitespace
+        ASTNode lastNode = last(filterToList(
+                lastStatement[0].getNode().getChildren(TokenSet.ANY),
+                node -> !INSIGNIFICANT_TOKENS.contains(node.getElementType())));
+
+        int end = lastNode.getTextRange().getEndOffset()
+                - absoluteFunctionStart;
+        String text = function.getText().substring(start, end);
         assert text.startsWith("def");
         return text.trim();
     }
@@ -141,7 +174,7 @@ public class Utils {
         return collection.stream().filter(predicate).collect(Collectors.toList());
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings("WeakerAccess")
     static <T> List<T> filterToList(T[] array, Predicate<T> predicate) {
         return Arrays.stream(array).filter(predicate).collect(Collectors.toList());
     }
@@ -150,9 +183,16 @@ public class Utils {
      * Assert that the argument is null without having to make an extra statement and possibly a variable.
      * Easy way to silence some warnings.
      */
-    @NotNull static <T> T notNull(T x) {
+    @Contract(pure = true)
+    @NotNull
+    static <T> T notNull(T x) {
         assert x != null;
         return x;
+    }
+
+    @Contract(pure = true)
+    private static <T> T last(List<T> list) {
+        return list.get(list.size() - 1);
     }
 
 }
