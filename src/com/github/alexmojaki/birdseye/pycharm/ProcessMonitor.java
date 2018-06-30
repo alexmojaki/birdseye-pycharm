@@ -182,6 +182,13 @@ class ProcessMonitor {
             errorMessage = title + checkEventLog;
 
             if (restart) {
+                // The process might still be alive for a bit after the output stopped
+                // Actually stop it just to make sure things are in a consistent state
+                // We don't care if there are errors.
+                try {
+                    stop();
+                } catch (Exception ignored) {
+                }
                 start();
             }
         }).start();

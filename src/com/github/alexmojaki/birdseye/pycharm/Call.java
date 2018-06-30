@@ -507,7 +507,7 @@ public class Call {
 
         void navigate(int direction) {
             if (canNavigate(direction)) {
-                iterationIndex += direction;
+                iterationIndex = currentIteration() + direction;
                 update();
             }
         }
