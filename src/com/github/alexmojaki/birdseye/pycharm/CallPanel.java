@@ -24,6 +24,7 @@ import java.util.*;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.github.alexmojaki.birdseye.pycharm.Utils.mapToList;
 import static com.github.alexmojaki.birdseye.pycharm.Utils.tag;
@@ -52,6 +53,9 @@ public class CallPanel extends JBPanel {
     // This either shows the inspector tree, or when it's empty, an explanation of what to do
     private CardLayout cardLayout = new CardLayout();
     private JBPanel cardPanel = new JBPanel(cardLayout);
+
+    // True while reopenPaths is running
+    private boolean reopening = false;
 
     CallPanel(Call call) {
         super();
@@ -104,7 +108,11 @@ public class CallPanel extends JBPanel {
 
             @Override
             public void treeExpanded(TreeExpansionEvent event) {
-                processPath(event, openPaths::putValue);
+                // Only do something if this is the result of the user expanding a single node
+                if (!reopening) {
+                    processPath(event, openPaths::putValue);
+                    reopenPaths();
+                }
             }
 
             @Override
@@ -171,19 +179,44 @@ public class CallPanel extends JBPanel {
         }
         model.nodeStructureChanged(root);
 
-        // Collect the paths and open them later, because we're iterating over
-        // openPaths, and tree.expandPath will trigger changes to openPaths
-        List<TreePath> paths = new ArrayList<>();
+        reopenPaths();
+    }
 
-        for (int i = 0; i < root.getChildCount(); i++) {
-            InspectorTreeNode valueRoot = (InspectorTreeNode) root.getChildAt(i);
-            for (List<String> path : openPaths.get(valueRoot.node)) {
-                paths.add(labelsPathToTreePath(valueRoot, path));
+    private void reopenPaths() {
+        // Don't trigger treeExpanded in the listener when calling tree.expandPath
+        reopening = true;
+
+        try {
+            DefaultMutableTreeNode root = root();
+            for (int i = 0; i < root.getChildCount(); i++) {
+                InspectorTreeNode valueRoot = (InspectorTreeNode) root.getChildAt(i);
+
+                // The cast to Set is just to show that the .contains below is fast
+                Set<List<String>> pathsForNode = (Set<List<String>>) openPaths.get(valueRoot.node);
+
+                for (List<String> path : pathsForNode) {
+
+                    /* Only expand the path if all parent paths are also open.
+                       For example, if we've expanded the tree to look like:
+                       A
+                       |- B
+                          |- C
+
+                       and then we collapse A, the path to C is still in openPaths. The check below
+                       ensures that we don't expand that path (when stepping a loop)
+                       because its parent is not in openPaths anymore. Otherwise A would open again.
+
+                       Later if the user expands A again, B will automatically expand because
+                       treeExpanded calls reopenPaths.
+                     */
+                    if (IntStream.range(0, path.size())
+                            .allMatch(j -> pathsForNode.contains(path.subList(0, j)))) {
+                        tree.expandPath(labelsPathToTreePath(valueRoot, path));
+                    }
+                }
             }
-        }
-
-        for (TreePath path : paths) {
-            tree.expandPath(path);
+        } finally {
+            reopening = false;
         }
     }
 
