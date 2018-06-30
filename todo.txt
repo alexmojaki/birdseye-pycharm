@@ -1,6 +1,3 @@
-inner open paths
-invalidate exception highlighter
-
 test
 release python side (add database versioning)
 set correct min version

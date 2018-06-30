@@ -550,6 +550,9 @@ public class Call {
         attributes.setEffectType(EffectType.ROUNDED_BOX);
         attributes.setEffectColor(JBColor.RED);
         exceptionHighlighters = addTempHighlighters(n -> {
+            if (n.isRangeInvalid()) {
+                return false;
+            }
             NodeValue value = n.value();
             return value != null && value.isException();
         }, attributes);
@@ -618,6 +621,7 @@ public class Call {
         navigators.clear();
         project = null;
         tempHighlighters.clear();
+        exceptionHighlighters.clear();
         toolWindowContent = null;
         meta = null;
     }

@@ -89,7 +89,9 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
     private Content callsListContent = null;
     ApiClient apiClient;
 
-    /** Whether or not the tool window is visible */
+    /**
+     * Whether or not the tool window is visible
+     */
     private boolean isActive = false;
 
     Timer timer = new Timer();
@@ -105,7 +107,9 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
         processMonitor = new ProcessMonitor(this);
     }
 
-    /** Run checkHashes 2 seconds from now in the correct thread */
+    /**
+     * Run checkHashes 2 seconds from now in the correct thread
+     */
     private void scheduleHashCheck() {
         timer.schedule(new TimerTask() {
             @Override
@@ -295,11 +299,13 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
 
     }
 
-    @Nullable private ToolWindow getToolWindow() {
+    @Nullable
+    private ToolWindow getToolWindow() {
         return ToolWindowManager.getInstance(myProject).getToolWindow("birdseye");
     }
 
-    @Nullable Call currentCall() {
+    @Nullable
+    Call currentCall() {
         if (!isActive || calls.isEmpty()) {
             return null;
         }
@@ -309,12 +315,13 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
     /**
      * Returns a subset of calls which doesn't have two calls for the same
      * function. Calls with more recently selected panels get priority.
-     *
+     * <p>
      * Two calls have the same function if they start at the same offset, so they can
      * have different bodies. Therefore this will behave sensibly if the user
      * debugs a function, edits it, and debugs it again, and both call panels are open.
      */
-    @NotNull List<Call> activeCalls() {
+    @NotNull
+    List<Call> activeCalls() {
         if (!isActive) {
             return Collections.emptyList();
         }
@@ -371,14 +378,15 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
         EditorFactory.getInstance().getEventMulticaster().addDocumentListener(new DocumentListener() {
             @Override
             public void documentChanged(DocumentEvent event) {
-                for (Call call : calls) {
-                    if (!event.getDocument().equals(call.document())) {
-                        continue;
-                    }
-                    for (HideableRangeHighlighter highlighter : call.exceptionHighlighters) {
-                        if (highlighter.node.isRangeInvalid()) {
-                            highlighter.hide();
-                        }
+                Call call = currentCall();
+                if (call == null || !event.getDocument().equals(call.document())) {
+                    return;
+                }
+                for (HideableRangeHighlighter highlighter : call.exceptionHighlighters) {
+                    if (highlighter.node.isRangeInvalid()) {
+                        highlighter.hide();
+                    } else {
+                        highlighter.show();
                     }
                 }
             }
