@@ -112,16 +112,15 @@ class ProcessMonitor {
         dbUrl = state.dbUrl;
         final String homePath = projectSdk.getHomePath();
         GeneralCommandLine commandLine = new GeneralCommandLine(
-                homePath, "-m", "birdseye", "--port", port + "")
-                .withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.NONE);
+                homePath, "-m", "birdseye", "--port", port + "");
         String charsetName = commandLine.getCharset().name();
 
-        startTime = System.currentTimeMillis();
+        // Reloader must be off to allow destroying process
+        commandLine.getEnvironment().put("BIRDSEYE_RELOADER", "0");
 
-        // Empty dbUrl means let birdseye use the default sqlite database
-        if (!dbUrl.isEmpty()) {
-            commandLine.getEnvironment().put("BIRDSEYE_DB", dbUrl);
-        }
+        commandLine.getEnvironment().put("BIRDSEYE_DB", dbUrl);
+
+        startTime = System.currentTimeMillis();
 
         // Actually try to run the process
         try {
