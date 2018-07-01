@@ -1,7 +1,6 @@
 package com.github.alexmojaki.birdseye.pycharm;
 
 import com.intellij.openapi.editor.EditorLinePainter;
-import com.intellij.openapi.editor.HighlighterColors;
 import com.intellij.openapi.editor.LineExtensionInfo;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.markup.TextAttributes;
@@ -11,9 +10,9 @@ import com.intellij.openapi.extensions.ExtensionsArea;
 import com.intellij.openapi.extensions.impl.ExtensionPointImpl;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.xdebugger.ui.DebuggerColors;
 import org.jetbrains.annotations.NotNull;
 
-import java.awt.*;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,8 +35,7 @@ public class HoverValueEditorLinePainter extends EditorLinePainter {
                 && lineNumber == currentLineNumber
                 && file.equals(currentFile)
                 && project.getLocationHash().equals(currentProjectHash)) {
-            TextAttributes attributes = EditorColorsManager.getInstance().getGlobalScheme().getAttributes(HighlighterColors.TEXT).clone();
-            attributes.setFontType(Font.ITALIC);
+            TextAttributes attributes = EditorColorsManager.getInstance().getGlobalScheme().getAttributes(DebuggerColors.INLINED_VALUES);
             return Collections.singletonList(new LineExtensionInfo("    " + repr, attributes));
         }
         return null;
