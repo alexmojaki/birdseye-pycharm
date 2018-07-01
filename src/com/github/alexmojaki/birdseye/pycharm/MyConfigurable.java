@@ -85,7 +85,9 @@ public class MyConfigurable implements Configurable {
             statusLabel.setIcon(running ?
                     AllIcons.Actions.Execute :
                     AllIcons.Actions.Suspend);
-            errorLabel.setText(processMonitor.errorMessage);
+            if (!running) {
+                errorLabel.setText(processMonitor.errorMessage);
+            }
 
             restartButton = new JButton("Restart server", AllIcons.Actions.Restart);
             restartButton.addActionListener(e -> {
