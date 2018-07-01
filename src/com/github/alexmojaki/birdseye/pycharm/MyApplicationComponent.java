@@ -50,14 +50,13 @@ public class MyApplicationComponent implements ApplicationComponent {
                             forPort.values(),
                             c -> String.format("%s (<code>%s</code>)",
                                     escapeHtml(c.getProject().getName()),
-                                    escapeHtml(component.state.dbUrl)));
+                                    c.state.dbUrl.isEmpty() ? "default" : escapeHtml(c.state.dbUrl)));
 
-                    String title = "Multiple projects running birdseye on the same port with different database URLs";
-                    String message = htmlList("ul", items);
+                    String title = "birdseye preferences conflict";
+                    String message = String.format("Multiple projects want to run birdseye on the same port (%s) with different database URLs:", port) + htmlList("ul", items);
                     component.notifyError(title, message);
-                    component.processMonitor.errorMessage = tag("html",
-                            title + " <br> " + message);
-
+                    component.processMonitor.errorMessage = tag("html", message);
+                    component.processMonitor.stop();
                 } else {
                     ProcessMonitor processMonitor = component.processMonitor;
                     if (!processMonitor.isRunning()) {
