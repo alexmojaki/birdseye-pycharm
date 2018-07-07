@@ -3,13 +3,19 @@ package com.github.alexmojaki.birdseye.pycharm;
 import com.google.common.collect.EvictingQueue;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationListener;
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.util.Consumer;
 import com.jetbrains.python.packaging.PyPackage;
 import com.jetbrains.python.packaging.PyPackageManager;
 import com.jetbrains.python.packaging.PyRequirement;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.jetbrains.annotations.NotNull;
 
+import javax.swing.event.HyperlinkEvent;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
@@ -53,13 +59,13 @@ class ProcessMonitor {
         this.projectComponent = projectComponent;
     }
 
+    private static final String startFailed = "Could not start birdseye server";
+    private static final String checkEventLog = ": check Event Log for details";
+
     /**
      * Try to start the server process.
      */
     void start() {
-        String startFailed = "Could not start birdseye server";
-        String checkEventLog = ": check Event Log for details";
-
         assert !isRunning();
 
         stopped = false;
@@ -158,6 +164,25 @@ class ProcessMonitor {
                                 null
                         );
                     }
+
+                    if (line.contains("The birdseye database schema is out of date")) {
+                        projectComponent.notify(
+                                "birdseye database schema out of date",
+                                "Back up any data if desired, then click <a href='#'>here</a> " +
+                                        "to clear the database",
+                                new NotificationListener.Adapter() {
+                                    @Override
+                                    protected void hyperlinkActivated(
+                                            @NotNull Notification notification,
+                                            @NotNull HyperlinkEvent event) {
+                                        clearDatabase(homePath);
+                                    }
+                                },
+                                NotificationType.ERROR
+                        );
+                        errorMessage = "The birdseye database schema is out of date. The database must be cleared.";
+                        return;
+                    }
                 }
             }
 
@@ -189,6 +214,53 @@ class ProcessMonitor {
                 } catch (Exception ignored) {
                 }
                 start();
+            }
+        }).start();
+    }
+
+    private void clearDatabase(String homePath) {
+        GeneralCommandLine commandLine = new GeneralCommandLine(
+                homePath, "-m", "birdseye.clear_db");
+
+        commandLine.getEnvironment().put("BIRDSEYE_DB", dbUrl);
+        String errorTitle = "Failed to clear database";
+
+        Consumer<String> showError = (message) -> {
+            projectComponent.notifyError(
+                    errorTitle,
+                    message);
+            errorMessage = errorTitle + checkEventLog;
+        };
+
+        Process process;
+        try {
+            process = commandLine.createProcess();
+        } catch (ExecutionException e) {
+            showError.consume(ExceptionUtils.getStackTrace(e));
+            return;
+        }
+
+        new Thread(() -> {
+            while (process.isAlive()) {
+                try {
+                    process.waitFor();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (process.exitValue() == 0) {
+                projectComponent.notify(
+                        "Database cleared successfully",
+                        "Now starting birdseye server",
+                        null,
+                        NotificationType.INFORMATION);
+                start();
+            } else {
+                String charsetName = commandLine.getCharset().name();
+                Scanner s = new Scanner(process.getErrorStream(), charsetName).useDelimiter("\\A");
+                String message = s.hasNext() ? s.next() : "";
+                showError.consume(message);
             }
         }).start();
     }

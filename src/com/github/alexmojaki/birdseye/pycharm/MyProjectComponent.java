@@ -357,7 +357,7 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
         notify(title, message, null, NotificationType.ERROR);
     }
 
-    private void notify(String title, String message, NotificationListener listener, NotificationType type) {
+    void notify(String title, String message, NotificationListener listener, NotificationType type) {
         Notifications.Bus.notify(new Notification(
                         "birdseye",
                         MyProjectComponent.BIRDSEYE_ICON,

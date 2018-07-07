@@ -56,7 +56,7 @@ class ApiClient {
                     message += " You probably need to upgrade birdseye:<br>" +
                             htmlList("ol", Arrays.asList(
                                     "<code>pip install --upgrade birdseye</code>",
-                                    "Delete existing database tables (e.g. delete <code>$HOME/.birdseye.db</code>).",
+                                    "Delete existing database tables with <code>python -m birdseye.clear_db</code>",
                                     "Restart the server."
                             ));
                 }
