@@ -95,7 +95,7 @@ public class Call {
 
         SmartPointerManager smartPointerManager = SmartPointerManager.getInstance(project);
 
-        for (LoopNodeRange loopNode : functionData.loop_nodes) {
+        for (LoopNodeRange loopNode : functionData.loop_ranges) {
             // Find a PsiElement with the correct text range
             RangeMarker rangeMarker = birdseyeFunction.loopRangeMarkers.get(loopNode.plainRange());
 
@@ -288,7 +288,7 @@ public class Call {
      */
     static class FunctionData {
         NodeRange[] node_ranges;
-        LoopNodeRange[] loop_nodes;
+        LoopNodeRange[] loop_ranges;
         Map<Integer, int[]> node_loops;
     }
 
@@ -613,7 +613,7 @@ public class Call {
         }
         panel.selectedNodes.clear();
         panel = null;
-        functionData.loop_nodes = null;
+        functionData.loop_ranges = null;
         functionData.node_loops.clear();
         functionData.node_ranges = null;
         functionData = null;
