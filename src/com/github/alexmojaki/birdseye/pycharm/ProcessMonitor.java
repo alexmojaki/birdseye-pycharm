@@ -87,7 +87,7 @@ class ProcessMonitor {
 
         final PyPackageManager packageManager = PyPackageManager.getInstance(projectSdk);
         PyRequirement pyRequirement = packageManager
-                .parseRequirements("birdseye>=0.4.2")
+                .parseRequirements("birdseye>=0.5.0")
                 .get(0);
 
         // Try to find out which packages are installed

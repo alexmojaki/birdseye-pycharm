@@ -1,5 +1,0 @@
-test on windows:
-    everything fine
-    db version out of date
-    error when clearing
-set correct min version
