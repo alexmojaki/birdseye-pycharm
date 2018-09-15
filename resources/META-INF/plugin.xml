@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.github.alexmojaki.birdseye.pycharm</id>
     <name>birdseye</name>
-    <version>1.0</version>
+    <version>1.0.1</version>
     <vendor email="alex.mojaki@gmail.com" url="https://github.com/alexmojaki/birdseye-pycharm">Alex Hall</vendor>
     <depends>com.intellij.modules.python</depends>
 
@@ -10,12 +10,12 @@
     ]]></description>
 
     <change-notes><![CDATA[
-      First version.
+      1.0.1: Rebuild for compatibility with PyCharm 2018.2
     ]]>
     </change-notes>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-    <idea-version since-build="173.0"/>
+    <idea-version since-build="182.0"/>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
          on how to target different products -->
