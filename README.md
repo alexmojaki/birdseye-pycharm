@@ -1,7 +1,5 @@
 # ![logo](https://i.imgur.com/i7uaJDO.png) birdseye plugin for PyCharm
 
-**NOTE:** For PyCharm version ≥ 2018.2, the publicly released plugin is currently not working correctly. The fix has been submitted [and is pending approval](https://plugins.jetbrains.com/plugin/10917-birdseye/update/49974). In the meantime you can [download the zip](https://github.com/alexmojaki/birdseye-pycharm/blob/master/birdseye-pycharm.zip) and use "Install plugin from disk" in PyCharm.
-
 [JetBrains Plugin Repository page](https://plugins.jetbrains.com/plugin/10917-birdseye)
 
 [birdseye](https://github.com/alexmojaki/birdseye) is a unique debugger for Python. This plugin lets you use it right in the code editor of your Intellij IDE, so that you can switch between editing and debugging seamlessly:
