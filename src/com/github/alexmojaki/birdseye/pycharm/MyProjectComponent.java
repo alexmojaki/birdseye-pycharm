@@ -354,16 +354,18 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
         notify(title, message, null, NotificationType.ERROR);
     }
 
-    void notify(String title, String message, NotificationListener listener, NotificationType type) {
-        Notifications.Bus.notify(new Notification(
-                        "birdseye",
-                        MyProjectComponent.BIRDSEYE_ICON,
-                        title,
-                        null,
-                        message,
-                        type,
-                        listener),
+    Notification notify(String title, String message, NotificationListener listener, NotificationType type) {
+        Notification notification = new Notification(
+                "birdseye",
+                MyProjectComponent.BIRDSEYE_ICON,
+                title,
+                null,
+                message,
+                type,
+                listener);
+        Notifications.Bus.notify(notification,
                 myProject);
+        return notification;
     }
 
     Project getProject() {
@@ -448,9 +450,16 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
             });
         };
 
+        Notification[] notification = {null};
+
         // Install birdseye, then run onInstalled
         Runnable install = () -> ui
-                .apply(onInstalled)
+                .apply(() -> {
+                    if (onInstalled != null) {
+                        onInstalled.run();
+                    }
+                    notification[0].hideBalloon();
+                })
                 .install(packageManager.parseRequirements(
                         "birdseye"),
                         Arrays.asList("--upgrade", "--upgrade-strategy", "only-if-needed"));
@@ -478,7 +487,7 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
             }
         };
 
-        notify(title, message, listener, NotificationType.WARNING);
+        notification[0] = notify(title, message, listener, NotificationType.WARNING);
     }
 
 
