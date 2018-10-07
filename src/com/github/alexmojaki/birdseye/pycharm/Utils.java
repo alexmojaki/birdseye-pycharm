@@ -49,7 +49,9 @@ public class Utils {
         if (s.length() <= maxLength + 5) {
             return s;
         }
-        return s.substring(0, maxLength - 3) + "...";
+        return s.substring(0, maxLength / 2 - 1) +
+                "..." +
+                s.substring(s.length() - maxLength / 2 + 2);
     }
 
     /**
