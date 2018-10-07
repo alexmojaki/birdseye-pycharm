@@ -9,9 +9,7 @@ import com.intellij.notification.NotificationType;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.util.Consumer;
-import com.jetbrains.python.packaging.PyPackage;
-import com.jetbrains.python.packaging.PyPackageManager;
-import com.jetbrains.python.packaging.PyRequirement;
+import com.jetbrains.python.packaging.*;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -86,31 +84,39 @@ class ProcessMonitor {
         }
 
         final PyPackageManager packageManager = PyPackageManager.getInstance(projectSdk);
-        PyRequirement pyRequirement = packageManager
-                .parseRequirements("birdseye>=0.5.0")
-                .get(0);
+        CondaDisabler condaDisabler = new CondaDisabler(packageManager);
+        condaDisabler.disable();
 
-        // Try to find out which packages are installed
-        List<PyPackage> packages;
         try {
-            packages = packageManager.refreshAndGetPackages(false);
-        } catch (ExecutionException e) {
-            projectComponent.notifyError(
-                    startFailed,
-                    ExceptionUtils.getStackTrace(e));
-            errorMessage = startFailed + checkEventLog;
-            return;
-        }
+            PyRequirement pyRequirement = packageManager
+                    .parseRequirements("birdseye>=0.5.0")
+                    .get(0);
 
-        // Check if birdseye is installed. If not, show a message offering to install.
-        // Once it's installed, try starting the process again.
-        if (pyRequirement.match(packages) == null) {
-            errorMessage = "Required version of birdseye not installed";
-            projectComponent.offerInstall(
-                    errorMessage,
-                    "Click <a href='#'>here</a> to install/upgrade birdseye.",
-                    this::start);
-            return;
+            // Try to find out which packages are installed
+            List<PyPackage> packages;
+            try {
+                packages = packageManager.refreshAndGetPackages(false);
+            } catch (ExecutionException e) {
+                projectComponent.notifyError(
+                        startFailed,
+                        ExceptionUtils.getStackTrace(e));
+                errorMessage = startFailed + checkEventLog;
+                return;
+            }
+
+            // Check if birdseye is installed. If not, show a message offering to install.
+            // Once it's installed, try starting the process again.
+            if (pyRequirement.match(packages) == null) {
+                errorMessage = "Required version of birdseye not installed";
+                projectComponent.offerInstall(
+                        errorMessage,
+                        "Click <a href='#'>here</a> to install/upgrade birdseye.",
+                        this::start);
+                return;
+            }
+
+        } finally {
+            condaDisabler.reset();
         }
 
         State state = projectComponent.state;

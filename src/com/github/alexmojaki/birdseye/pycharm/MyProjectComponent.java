@@ -30,10 +30,7 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.content.ContentManagerAdapter;
 import com.intellij.ui.content.ContentManagerEvent;
-import com.jetbrains.python.packaging.PyPackage;
-import com.jetbrains.python.packaging.PyPackageManager;
-import com.jetbrains.python.packaging.PyPackageManagerUI;
-import com.jetbrains.python.packaging.PyPackageUtil;
+import com.jetbrains.python.packaging.*;
 import com.jetbrains.python.psi.PyFunction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -428,20 +425,28 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
         Sdk projectSdk = ProjectRootManager.getInstance(myProject).getProjectSdk();
         assert projectSdk != null;
 
-        Function<Runnable, PyPackageManagerUI> ui = (runnable) -> new PyPackageManagerUI(myProject, projectSdk, new PyPackageManagerUI.Listener() {
-            @Override
-            public void started() {
-            }
-
-            @Override
-            public void finished(List<ExecutionException> exceptions) {
-                if (exceptions.isEmpty() && runnable != null) {
-                    runnable.run();
-                }
-            }
-        });
-
         final PyPackageManager packageManager = PyPackageManager.getInstance(projectSdk);
+        // Disable conda package management before installing, then reset afterwards
+        // We don't directly control what package manger the UI uses, so this relies
+        // on the fact that the instances are cached.
+        CondaDisabler condaDisabler = new CondaDisabler(packageManager);
+
+        Function<Runnable, PyPackageManagerUI> ui = (runnable) -> {
+            condaDisabler.disable();
+            return new PyPackageManagerUI(myProject, projectSdk, new PyPackageManagerUI.Listener() {
+                @Override
+                public void started() {
+                }
+
+                @Override
+                public void finished(List<ExecutionException> exceptions) {
+                    condaDisabler.reset();
+                    if (exceptions.isEmpty() && runnable != null) {
+                        runnable.run();
+                    }
+                }
+            });
+        };
 
         // Install birdseye, then run onInstalled
         Runnable install = () -> ui
@@ -456,14 +461,19 @@ public class MyProjectComponent extends AbstractProjectComponent implements Pers
              */
             @Override
             protected void hyperlinkActivated(@NotNull Notification notification, @NotNull HyperlinkEvent e) {
-                List<PyPackage> packages = packageManager.getPackages();
-                assert packages != null;
-                if (!PyPackageUtil.hasManagement(packages)) {
-                    // Install management packages, then birdseye
-                    ui.apply(install).installManagement();
-                } else {
-                    // Just install birdseye
-                    install.run();
+                condaDisabler.disable();
+                try {
+                    List<PyPackage> packages = packageManager.getPackages();
+                    assert packages != null;
+                    if (!PyPackageUtil.hasManagement(packages)) {
+                        // Install management packages, then birdseye
+                        ui.apply(install).installManagement();
+                    } else {
+                        // Just install birdseye
+                        install.run();
+                    }
+                } catch (Throwable ignored) {
+                    condaDisabler.reset();
                 }
             }
         };
