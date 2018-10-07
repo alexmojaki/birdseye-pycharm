@@ -1,13 +1,10 @@
 package com.github.alexmojaki.birdseye.pycharm;
 
-import com.intellij.openapi.diff.DiffColors;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.LogicalPosition;
-import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.event.EditorMouseEvent;
 import com.intellij.openapi.editor.event.EditorMouseListener;
 import com.intellij.openapi.editor.event.EditorMouseMotionAdapter;
-import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
 
@@ -108,8 +105,7 @@ public class HoverListener extends EditorMouseMotionAdapter implements EditorMou
         HoverValueEditorLinePainter.currentLineNumber = pos.line;
 
         // Highlight text of node
-        TextAttributes attributes = EditorColorsManager.getInstance().getGlobalScheme().getAttributes(DiffColors.DIFF_MODIFIED);
-        rangeHighlighter = node.addRangeHighlighter(attributes);
+        rangeHighlighter = Utils.addHoverHighlighter(node);
     }
 
     /**

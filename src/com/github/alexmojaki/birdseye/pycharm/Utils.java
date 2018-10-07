@@ -4,8 +4,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.intellij.codeInsight.daemon.impl.EditorTracker;
 import com.intellij.lang.ASTNode;
+import com.intellij.openapi.diff.DiffColors;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.ex.DocumentEx;
+import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -195,4 +198,8 @@ public class Utils {
         return list.get(list.size() - 1);
     }
 
+    static HideableRangeHighlighter addHoverHighlighter(Call.Node node) {
+        TextAttributes attributes = EditorColorsManager.getInstance().getGlobalScheme().getAttributes(DiffColors.DIFF_MODIFIED);
+        return node.addRangeHighlighter(attributes);
+    }
 }

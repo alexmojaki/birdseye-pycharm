@@ -20,6 +20,8 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.*;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -134,6 +136,33 @@ public class CallPanel extends JBPanel {
                 }
             }
         });
+
+        MouseAdapter mouseListener = new MouseAdapter() {
+
+            HideableRangeHighlighter highlighter;
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if (highlighter != null) {
+                    highlighter.hide();
+                }
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                if (highlighter != null) {
+                    highlighter.hide();
+                }
+                TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());
+                if (treePath == null) {
+                    return;
+                }
+                Call.Node node = ((InspectorTreeNode) treePath.getPathComponent(1)).node;
+                highlighter = Utils.addHoverHighlighter(node);
+            }
+        };
+        tree.addMouseListener(mouseListener);
+        tree.addMouseMotionListener(mouseListener);
     }
 
     /**
